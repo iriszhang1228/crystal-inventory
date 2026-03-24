@@ -3,312 +3,495 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Crystal Inventory Manager</title>
+  <title>Crystal Inventory</title>
   <style>
     /* ===================================================================
-       CSS VARIABLES — edit here to retheme the entire app
+       DESIGN TOKENS  — shadcn/ui · zinc scale · Apple-inspired
     =================================================================== */
     :root {
-      --primary:        #7c3aed;
-      --primary-light:  #ede9fe;
-      --primary-dark:   #5b21b6;
-      --accent:         #a78bfa;
-      --danger:         #ef4444;
-      --warning:        #f59e0b;
-      --success:        #10b981;
-      --bg:             #f5f3ff;
-      --surface:        #ffffff;
-      --border:         #e5e7eb;
-      --text:           #1f2937;
-      --text-secondary: #6b7280;
-      --shadow:         0 1px 3px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.06);
-      --shadow-md:      0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
-      --shadow-lg:      0 10px 15px rgba(0,0,0,.10), 0 4px 6px rgba(0,0,0,.05);
-      --radius:         12px;
-      --radius-sm:      7px;
-      --transition:     0.2s ease;
+      --bg:           #fafafa;
+      --surface:      #ffffff;
+      --border:       #e4e4e7;
+      --fg:           #09090b;
+      --fg-muted:     #71717a;
+      --muted:        #f4f4f5;
+      --primary:      #18181b;
+      --primary-fg:   #fafafa;
+      --destructive:  #ef4444;
+      --warning-bg:   #fffbeb;
+      --warning-border: #fde68a;
+      --warning-fg:   #92400e;
+      --radius:       8px;
+      --radius-sm:    6px;
+      --radius-lg:    12px;
+      --shadow-xs:    0 1px 2px rgba(0,0,0,.04);
+      --shadow-sm:    0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md:    0 4px 8px rgba(0,0,0,.06), 0 2px 4px rgba(0,0,0,.04);
+      --shadow-lg:    0 16px 32px rgba(0,0,0,.10), 0 4px 8px rgba(0,0,0,.04);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Inter, sans-serif;
       background: var(--bg);
-      color: var(--text);
+      color: var(--fg);
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    /* ===== HEADER ===== */
-    .header {
-      background: var(--surface);
+    /* ===================================================================
+       LOADING BANNER
+    =================================================================== */
+    .loading-banner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 34px;
+      background: var(--muted);
       border-bottom: 1px solid var(--border);
-      padding: 0 28px;
-      height: 64px;
+      font-size: 12px;
+      color: var(--fg-muted);
+    }
+    .loading-banner.hidden { display: none; }
+    .spinner {
+      width: 12px; height: 12px;
+      border: 1.5px solid var(--border);
+      border-top-color: var(--fg);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===================================================================
+       HEADER
+    =================================================================== */
+    .header {
+      height: 56px;
+      background: rgba(255,255,255,.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
+      padding: 0 24px;
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: var(--shadow);
     }
     .header-brand {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--primary);
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+      letter-spacing: -.02em;
     }
-    .header-brand .logo { font-size: 26px; }
+    .header-brand svg { width: 16px; height: 16px; flex-shrink: 0; }
 
-    /* ===== BUTTONS ===== */
+    /* ===================================================================
+       BUTTONS
+    =================================================================== */
     .btn {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
-      padding: 8px 18px;
+      height: 34px;
+      padding: 0 14px;
       border-radius: var(--radius-sm);
-      border: none;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
+      font-family: inherit;
       cursor: pointer;
-      transition: background var(--transition);
+      border: none;
       white-space: nowrap;
+      transition: background .15s, opacity .15s;
     }
-    .btn:disabled { opacity: .55; cursor: not-allowed; }
-    .btn-primary   { background: var(--primary); color: #fff; }
-    .btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
-    .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover:not(:disabled) { background: #f9fafb; }
-    .btn-danger    { background: var(--danger); color: #fff; }
-    .btn-danger:hover:not(:disabled) { background: #dc2626; }
-    .btn-sm { padding: 6px 12px; font-size: 13px; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .btn svg { width: 13px; height: 13px; flex-shrink: 0; }
 
-    /* ===== LAYOUT ===== */
-    .main { max-width: 1440px; margin: 0 auto; padding: 28px 28px 60px; }
+    .btn-primary     { background: var(--primary); color: var(--primary-fg); }
+    .btn-primary:hover:not(:disabled) { background: #27272a; }
 
-    /* ===== LOADING BANNER ===== */
-    .loading-banner {
-      text-align: center;
-      padding: 12px;
-      background: var(--primary-light);
-      color: var(--primary);
-      font-size: 14px;
-      font-weight: 500;
-      border-bottom: 1px solid var(--accent);
+    .btn-secondary   { background: var(--surface); color: var(--fg); border: 1px solid var(--border); }
+    .btn-secondary:hover:not(:disabled) { background: var(--muted); }
+
+    .btn-destructive { background: var(--destructive); color: #fff; }
+    .btn-destructive:hover:not(:disabled) { background: #dc2626; }
+
+    .btn-ghost       { background: transparent; color: var(--fg-muted); }
+    .btn-ghost:hover:not(:disabled) { background: var(--muted); color: var(--fg); }
+
+    .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
+    .btn-sm svg { width: 12px; height: 12px; }
+
+    /* ===================================================================
+       LAYOUT
+    =================================================================== */
+    .main { max-width: 1440px; margin: 0 auto; padding: 28px 24px 80px; }
+
+    /* ===================================================================
+       PAGE HEADER
+    =================================================================== */
+    .page-heading {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 24px;
     }
-    .loading-banner.hidden { display: none; }
+    .page-title    { font-size: 22px; font-weight: 700; letter-spacing: -.03em; }
+    .page-subtitle { font-size: 13px; color: var(--fg-muted); margin-top: 2px; }
 
-    /* ===== STATS BAR ===== */
+    /* ===================================================================
+       STATS BAR
+    =================================================================== */
     .stats-bar {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-      gap: 16px;
-      margin-bottom: 28px;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
     }
     .stat-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 18px 20px;
-      box-shadow: var(--shadow);
+      padding: 16px;
+      box-shadow: var(--shadow-xs);
     }
-    .stat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--text-secondary); }
-    .stat-value { font-size: 30px; font-weight: 800; color: var(--primary); margin-top: 4px; line-height: 1; }
-    .stat-sub   { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+    .stat-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; color: var(--fg-muted); }
+    .stat-value { font-size: 28px; font-weight: 700; letter-spacing: -.04em; margin-top: 4px; }
+    .stat-value.warn { color: #b45309; }
+    .stat-sub   { font-size: 11px; color: var(--fg-muted); margin-top: 2px; }
 
-    /* ===== TOOLBAR ===== */
-    .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
-    .search-wrapper { position: relative; flex: 1; min-width: 220px; }
-    .search-icon {
-      position: absolute; left: 11px; top: 50%;
-      transform: translateY(-50%);
-      font-size: 15px; pointer-events: none; color: var(--text-secondary);
+    /* ===================================================================
+       TOOLBAR
+    =================================================================== */
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
     }
+    .search-wrapper { position: relative; flex: 1; min-width: 200px; }
+    .search-icon {
+      position: absolute; left: 10px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--fg-muted); pointer-events: none;
+      display: flex; align-items: center;
+    }
+    .search-icon svg { width: 13px; height: 13px; }
     .search-input {
-      width: 100%;
-      padding: 9px 14px 9px 36px;
+      width: 100%; height: 34px;
+      padding: 0 12px 0 30px;
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      font-size: 14px;
-      background: var(--surface);
-      transition: border-color var(--transition), box-shadow var(--transition);
+      font-size: 13px; font-family: inherit;
+      background: var(--surface); color: var(--fg);
+      transition: border-color .15s, box-shadow .15s;
     }
-    .search-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(167,139,250,.18); }
+    .search-input::placeholder { color: var(--fg-muted); }
+    .search-input:focus { outline: none; border-color: var(--fg); box-shadow: 0 0 0 2px rgba(9,9,11,.06); }
 
-    /* ===== FILTER TABS ===== */
-    .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
+    /* ===================================================================
+       FILTER TABS
+    =================================================================== */
+    .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
     .filter-tab {
-      padding: 6px 18px;
+      height: 28px; padding: 0 12px;
       border-radius: 20px;
       border: 1px solid var(--border);
       background: var(--surface);
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      color: var(--text-secondary);
-      transition: all var(--transition);
+      font-size: 12px; font-weight: 500; font-family: inherit;
+      cursor: pointer; color: var(--fg-muted);
+      transition: all .15s;
     }
-    .filter-tab:hover { border-color: var(--accent); color: var(--primary); }
-    .filter-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .filter-tab:hover { border-color: var(--fg); color: var(--fg); }
+    .filter-tab.active { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
 
-    /* ===== PRODUCT GRID ===== */
-    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 22px; }
+    /* ===================================================================
+       PRODUCT GRID
+    =================================================================== */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(265px, 1fr));
+      gap: 16px;
+    }
 
-    /* ===== PRODUCT CARD ===== */
+    /* ===================================================================
+       PRODUCT CARD
+    =================================================================== */
     .product-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: var(--radius-lg);
       overflow: hidden;
-      box-shadow: var(--shadow);
-      transition: box-shadow var(--transition), transform var(--transition);
+      box-shadow: var(--shadow-xs);
+      transition: box-shadow .2s, transform .2s;
       position: relative;
       display: flex;
       flex-direction: column;
     }
-    .product-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-    .product-card.low-stock { border-color: var(--warning); }
-    .low-stock-badge {
+    .product-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+    .product-card.low-stock { border-color: var(--warning-border); }
+
+    .low-stock-indicator {
       position: absolute; top: 10px; right: 10px;
-      background: var(--warning); color: #fff;
-      font-size: 11px; font-weight: 700;
-      padding: 3px 9px; border-radius: 20px;
-      text-transform: uppercase; letter-spacing: .04em; z-index: 1;
+      background: var(--warning-bg);
+      color: var(--warning-fg);
+      border: 1px solid var(--warning-border);
+      font-size: 10px; font-weight: 600;
+      padding: 2px 8px; border-radius: 20px;
+      letter-spacing: .02em;
     }
+
     .card-image-wrap {
-      width: 100%; height: 185px;
-      background: var(--primary-light);
+      width: 100%; height: 180px;
+      background: var(--muted);
       display: flex; align-items: center; justify-content: center;
       overflow: hidden; flex-shrink: 0;
     }
     .card-image-wrap img { width: 100%; height: 100%; object-fit: cover; }
-    .card-image-placeholder { font-size: 52px; opacity: .45; }
-    .card-body { padding: 16px; flex: 1; display: flex; flex-direction: column; }
-    .card-category-badge {
-      display: inline-block; font-size: 10px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .06em;
-      color: var(--primary); background: var(--primary-light);
-      padding: 2px 9px; border-radius: 20px; margin-bottom: 8px;
+    .card-img-placeholder {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 6px;
+      color: var(--fg-muted);
     }
-    .card-name  { font-size: 16px; font-weight: 700; margin-bottom: 3px; }
-    .card-sku   { font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; }
-    .card-meta  { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-    .meta-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 1px; }
-    .meta-value { font-size: 14px; font-weight: 600; }
-    .meta-value.warn { color: var(--warning); }
-    .card-price   { font-size: 20px; font-weight: 800; color: var(--primary); margin-bottom: 8px; }
-    .card-notes   { font-size: 12px; color: var(--text-secondary); font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px; }
-    .card-updated { font-size: 11px; color: var(--text-secondary); margin-bottom: 12px; flex: 1; }
-    .card-actions { display: flex; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; }
-    .card-actions .btn { flex: 1; justify-content: center; }
+    .card-img-placeholder svg { width: 22px; height: 22px; opacity: .35; }
+    .card-img-placeholder span { font-size: 11px; opacity: .5; }
 
-    /* ===== EMPTY STATE ===== */
-    .empty-state { grid-column: 1 / -1; text-align: center; padding: 80px 20px; color: var(--text-secondary); }
-    .empty-state .icon { font-size: 60px; margin-bottom: 16px; }
-    .empty-state h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .card-body { padding: 14px; flex: 1; display: flex; flex-direction: column; }
 
-    /* ===== MODAL ===== */
+    .card-meta-top {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .card-category {
+      font-size: 10px; font-weight: 500;
+      color: var(--fg-muted);
+      background: var(--muted);
+      border: 1px solid var(--border);
+      padding: 2px 7px; border-radius: 4px;
+      letter-spacing: .02em;
+    }
+
+    .card-name { font-size: 14px; font-weight: 600; letter-spacing: -.01em; margin-bottom: 2px; line-height: 1.3; }
+    .card-sku  {
+      font-size: 11px; color: var(--fg-muted); margin-bottom: 12px;
+      font-family: 'SF Mono', 'Menlo', 'Monaco', monospace;
+    }
+
+    .card-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .stat-item-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; color: var(--fg-muted); margin-bottom: 2px; }
+    .stat-item-value { font-size: 13px; font-weight: 600; }
+    .stat-item-value.warn { color: #b45309; }
+
+    .card-price   { font-size: 18px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 6px; }
+    .card-notes   { font-size: 11px; color: var(--fg-muted); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-updated { font-size: 10px; color: var(--fg-muted); margin-bottom: 12px; flex: 1; }
+
+    .card-actions {
+      display: flex; gap: 6px;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+    }
+    .card-actions .btn { flex: 1; }
+
+    /* ===================================================================
+       EMPTY STATE
+    =================================================================== */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 80px 20px;
+      color: var(--fg-muted);
+    }
+    .empty-state svg  { width: 36px; height: 36px; opacity: .2; margin-bottom: 14px; }
+    .empty-state h3   { font-size: 14px; font-weight: 600; color: var(--fg); margin-bottom: 4px; }
+    .empty-state p    { font-size: 13px; }
+
+    /* ===================================================================
+       MODAL
+    =================================================================== */
     .modal-overlay {
       position: fixed; inset: 0;
-      background: rgba(0,0,0,.50);
+      background: rgba(0,0,0,.35);
       z-index: 1000;
       display: flex; align-items: center; justify-content: center;
       padding: 20px;
       opacity: 0; visibility: hidden;
-      transition: opacity var(--transition), visibility var(--transition);
+      transition: opacity .2s, visibility .2s;
     }
     .modal-overlay.open { opacity: 1; visibility: visible; }
+
     .modal {
       background: var(--surface);
-      border-radius: var(--radius);
-      width: 100%; max-width: 620px; max-height: 92vh;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      width: 100%; max-width: 580px; max-height: 92vh;
       overflow-y: auto;
       box-shadow: var(--shadow-lg);
-      transform: scale(.96) translateY(-12px);
-      transition: transform var(--transition);
+      transform: scale(.97) translateY(-6px);
+      transition: transform .2s;
     }
     .modal-overlay.open .modal { transform: scale(1) translateY(0); }
+
     .modal-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 20px 24px;
+      padding: 16px 20px;
       border-bottom: 1px solid var(--border);
       position: sticky; top: 0;
       background: var(--surface); z-index: 1;
     }
-    .modal-title  { font-size: 18px; font-weight: 700; }
-    .modal-close  { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-secondary); padding: 4px 8px; border-radius: 4px; line-height: 1; }
-    .modal-close:hover { background: var(--border); }
-    .modal-body   { padding: 24px; }
-    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; border-top: 1px solid var(--border); }
+    .modal-title { font-size: 14px; font-weight: 600; letter-spacing: -.01em; }
+    .modal-close {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: none; border-radius: var(--radius-sm);
+      cursor: pointer; color: var(--fg-muted);
+    }
+    .modal-close:hover { background: var(--muted); color: var(--fg); }
+    .modal-close svg { width: 13px; height: 13px; }
 
-    /* ===== FORM ===== */
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .modal-body   { padding: 20px; }
+    .modal-footer {
+      display: flex; justify-content: flex-end; gap: 8px;
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ===================================================================
+       FORM
+    =================================================================== */
+    .form-section-label {
+      font-size: 11px; font-weight: 500; text-transform: uppercase;
+      letter-spacing: .06em; color: var(--fg-muted);
+      margin-bottom: 12px; margin-top: 18px;
+    }
+    .form-section-label:first-child { margin-top: 0; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .form-group { display: flex; flex-direction: column; gap: 5px; }
     .form-group.full { grid-column: 1 / -1; }
-    label { font-size: 13px; font-weight: 500; }
-    .required::after { content: ' *'; color: var(--danger); }
-    input[type="text"], input[type="number"], select, textarea {
-      padding: 9px 12px;
+
+    label { font-size: 12px; font-weight: 500; }
+    .required::after { content: ' *'; color: var(--destructive); }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+      height: 34px;
+      padding: 0 10px;
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      font-size: 14px; font-family: inherit;
-      background: var(--surface); color: var(--text);
-      transition: border-color var(--transition), box-shadow var(--transition);
+      font-size: 13px; font-family: inherit;
+      background: var(--surface); color: var(--fg);
+      transition: border-color .15s, box-shadow .15s;
     }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(167,139,250,.18); }
-    textarea { resize: vertical; min-height: 80px; }
+    textarea { height: auto; padding: 8px 10px; min-height: 68px; resize: vertical; }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--fg);
+      box-shadow: 0 0 0 2px rgba(9,9,11,.06);
+    }
+    input::placeholder, textarea::placeholder { color: var(--fg-muted); font-size: 12px; }
+    select {
+      appearance: none; cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
+    }
 
-    /* ===== IMAGE UPLOAD ===== */
+    /* ===================================================================
+       IMAGE UPLOAD
+    =================================================================== */
     .image-upload-area {
-      border: 2px dashed var(--border);
-      border-radius: var(--radius-sm);
-      padding: 24px; text-align: center; cursor: pointer;
-      transition: border-color var(--transition), background var(--transition);
+      border: 1.5px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 20px 16px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--bg);
+      transition: border-color .15s, background .15s;
     }
-    .image-upload-area:hover { border-color: var(--accent); background: var(--primary-light); }
-    .image-upload-area.has-image { padding: 0; border-style: solid; border-color: var(--accent); }
-    .image-upload-area.has-image img { width: 100%; max-height: 200px; object-fit: cover; border-radius: calc(var(--radius-sm) - 2px); display: block; }
-    .upload-icon { font-size: 34px; }
-    .upload-hint { font-size: 13px; color: var(--text-secondary); margin-top: 8px; }
-    .upload-hint small { display: block; font-size: 11px; margin-top: 2px; }
-    #imageInput { display: none; }
+    .image-upload-area:hover { border-color: var(--fg); background: var(--muted); }
+    .image-upload-area.has-image { padding: 0; border-style: solid; }
+    .image-upload-area.has-image img {
+      width: 100%; max-height: 180px;
+      object-fit: cover;
+      border-radius: calc(var(--radius) - 1.5px);
+      display: block;
+    }
+    .upload-icon { display: flex; justify-content: center; margin-bottom: 8px; color: var(--fg-muted); }
+    .upload-icon svg { width: 18px; height: 18px; }
+    .upload-text { font-size: 12px; font-weight: 500; color: var(--fg-muted); }
+    .upload-sub  { font-size: 11px; color: var(--fg-muted); opacity: .6; margin-top: 2px; }
+    #imageInput  { display: none; }
 
-    /* ===== CONFIRM DIALOG ===== */
+    /* ===================================================================
+       CONFIRM DIALOG
+    =================================================================== */
     .confirm-overlay {
       position: fixed; inset: 0;
-      background: rgba(0,0,0,.5);
+      background: rgba(0,0,0,.35);
       z-index: 2000;
       display: flex; align-items: center; justify-content: center;
       padding: 20px; opacity: 0; visibility: hidden;
-      transition: opacity var(--transition), visibility var(--transition);
+      transition: opacity .2s, visibility .2s;
     }
     .confirm-overlay.open { opacity: 1; visibility: visible; }
-    .confirm-dialog { background: var(--surface); border-radius: var(--radius); padding: 32px 28px; max-width: 380px; width: 100%; box-shadow: var(--shadow-lg); text-align: center; }
-    .confirm-icon    { font-size: 42px; margin-bottom: 12px; }
-    .confirm-title   { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-    .confirm-message { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; }
-    .confirm-actions { display: flex; gap: 12px; justify-content: center; }
-
-    /* ===== TOAST ===== */
-    .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-    .toast {
-      background: #1f2937; color: #fff;
-      padding: 12px 18px; border-radius: var(--radius-sm);
-      font-size: 14px; box-shadow: var(--shadow-md);
-      animation: toastIn .3s ease, toastOut .3s ease 2.7s forwards;
-      display: flex; align-items: center; gap: 8px;
+    .confirm-dialog {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      max-width: 340px; width: 100%;
+      box-shadow: var(--shadow-lg);
     }
-    .toast.success { background: var(--success); }
-    .toast.error   { background: var(--danger); }
-    @keyframes toastIn  { from { transform: translateX(110%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-    @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(30px); } }
+    .confirm-title   { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .confirm-message { font-size: 13px; color: var(--fg-muted); margin-bottom: 20px; line-height: 1.5; }
+    .confirm-actions { display: flex; justify-content: flex-end; gap: 8px; }
 
-    /* ===== RESPONSIVE ===== */
+    /* ===================================================================
+       TOAST
+    =================================================================== */
+    .toast-container {
+      position: fixed; bottom: 20px; right: 20px;
+      z-index: 3000;
+      display: flex; flex-direction: column; gap: 8px;
+      pointer-events: none;
+    }
+    .toast {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--fg); color: #fff;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      box-shadow: var(--shadow-md);
+      animation: toastIn .2s ease, toastOut .2s ease 2.8s forwards;
+      min-width: 180px;
+    }
+    .toast.error { background: var(--destructive); }
+    .toast svg { width: 13px; height: 13px; flex-shrink: 0; }
+    @keyframes toastIn  { from { transform: translateY(6px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+
+    /* ===================================================================
+       RESPONSIVE
+    =================================================================== */
     @media (max-width: 640px) {
       .main { padding: 16px 16px 60px; }
       .header { padding: 0 16px; }
-      .header-brand .brand-text { display: none; }
+      .page-heading { flex-direction: column; align-items: flex-start; gap: 12px; }
       .form-grid { grid-template-columns: 1fr; }
       .stats-bar { grid-template-columns: 1fr 1fr; }
       .product-grid { grid-template-columns: 1fr; }
@@ -317,72 +500,107 @@
 </head>
 <body>
 
-<!-- ===== LOADING BANNER ===== -->
-<div class="loading-banner" id="loadingBanner">⏳ Connecting to database…</div>
+<!-- LOADING BANNER -->
+<div class="loading-banner" id="loadingBanner">
+  <div class="spinner"></div>
+  Connecting to database
+</div>
 
-<!-- ===== HEADER ===== -->
+<!-- HEADER -->
 <header class="header">
   <div class="header-brand">
-    <span class="logo">💎</span>
-    <span class="brand-text">Crystal Inventory Manager</span>
+    <!-- Diamond icon -->
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m6 3 6 7L6 21M18 3l-6 7 6 11M3 9h18"/>
+    </svg>
+    Crystal Inventory
   </div>
-  <div>
-    <button class="btn btn-primary" id="addProductBtn">＋ Add Product</button>
-  </div>
+  <button class="btn btn-primary" id="addProductBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg>
+    Add Product
+  </button>
 </header>
 
-<!-- ===== MAIN ===== -->
+<!-- MAIN -->
 <main class="main">
-  <div class="stats-bar"    id="statsBar"></div>
+
+  <!-- Stats -->
+  <div class="stats-bar" id="statsBar"></div>
+
+  <!-- Toolbar -->
   <div class="toolbar">
     <div class="search-wrapper">
-      <span class="search-icon">🔍</span>
-      <input type="text" class="search-input" id="searchInput" placeholder="Search by name, SKU, or notes…" autocomplete="off" />
+      <span class="search-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </span>
+      <input type="text" class="search-input" id="searchInput" placeholder="Search products…" autocomplete="off" />
     </div>
   </div>
-  <div class="filters"      id="filterTabs"></div>
+
+  <!-- Filters -->
+  <div class="filters" id="filterTabs"></div>
+
+  <!-- Grid -->
   <div class="product-grid" id="productGrid"></div>
+
 </main>
 
-<!-- ===== ADD / EDIT MODAL ===== -->
+
+<!-- ADD / EDIT MODAL -->
 <div class="modal-overlay" id="productModalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="modal">
     <div class="modal-header">
       <h2 class="modal-title" id="modalTitle">Add Product</h2>
-      <button class="modal-close" id="modalCloseBtn" aria-label="Close">✕</button>
+      <button class="modal-close" id="modalCloseBtn" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
     </div>
+
     <div class="modal-body">
       <form id="productForm" novalidate>
-        <div class="form-group" style="margin-bottom:20px;">
-          <label>Product Image</label>
-          <div class="image-upload-area" id="imageUploadArea" title="Click to upload image">
+
+        <!-- Image -->
+        <div class="form-section-label">Image</div>
+        <div class="form-group" style="margin-bottom:16px;">
+          <div class="image-upload-area" id="imageUploadArea">
             <div id="imagePlaceholder">
-              <div class="upload-icon">📷</div>
-              <div class="upload-hint">Click to upload image<small>JPG, PNG, GIF, WebP — auto compressed</small></div>
+              <div class="upload-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+              </div>
+              <div class="upload-text">Click to upload image</div>
+              <div class="upload-sub">JPG, PNG, WebP — auto-compressed</div>
             </div>
-            <img id="imagePreview" alt="Product preview" style="display:none;" />
+            <img id="imagePreview" alt="Preview" style="display:none;" />
           </div>
           <input type="file" id="imageInput" accept="image/*" tabindex="-1" />
         </div>
+
+        <!-- Details -->
+        <div class="form-section-label">Details</div>
         <div class="form-grid">
           <div class="form-group">
             <label class="required" for="fieldName">Product Name</label>
-            <input type="text" id="fieldName" placeholder="e.g. Rose Quartz Bracelet" required />
+            <input type="text" id="fieldName" placeholder="Rose Quartz Bracelet" required />
           </div>
           <div class="form-group">
             <label class="required" for="fieldSku">SKU</label>
-            <input type="text" id="fieldSku" placeholder="e.g. RQ-001" required />
+            <input type="text" id="fieldSku" placeholder="RQ-001" required />
           </div>
           <div class="form-group">
             <label class="required" for="fieldCategory">Category</label>
             <select id="fieldCategory" required>
-              <option value="">Select category…</option>
+              <option value="">Select…</option>
             </select>
           </div>
           <div class="form-group">
             <label class="required" for="fieldSize">Size</label>
-            <input type="text" id="fieldSize" placeholder="e.g. 6mm, S/M/L, One Size" required />
+            <input type="text" id="fieldSize" placeholder="6mm / S / One Size" required />
           </div>
+        </div>
+
+        <!-- Pricing & Stock -->
+        <div class="form-section-label" style="margin-top:16px;">Pricing & Stock</div>
+        <div class="form-grid">
           <div class="form-group">
             <label class="required" for="fieldQuantity">Quantity</label>
             <input type="number" id="fieldQuantity" min="0" placeholder="0" required />
@@ -393,11 +611,13 @@
           </div>
           <div class="form-group full">
             <label for="fieldNotes">Notes</label>
-            <textarea id="fieldNotes" placeholder="Bead type, colour details, supplier info…"></textarea>
+            <textarea id="fieldNotes" placeholder="Bead type, colour, supplier info…"></textarea>
           </div>
         </div>
+
       </form>
     </div>
+
     <div class="modal-footer">
       <button class="btn btn-secondary" id="modalCancelBtn">Cancel</button>
       <button class="btn btn-primary"   id="modalSaveBtn">Save Product</button>
@@ -405,52 +625,42 @@
   </div>
 </div>
 
-<!-- ===== CONFIRM DIALOG ===== -->
+
+<!-- CONFIRM DIALOG -->
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-dialog">
-    <div class="confirm-icon">🗑️</div>
-    <div class="confirm-title">Delete Product</div>
-    <div class="confirm-message" id="confirmMessage">Are you sure? This cannot be undone.</div>
+    <div class="confirm-title">Delete product</div>
+    <div class="confirm-message" id="confirmMessage">Are you sure? This action cannot be undone.</div>
     <div class="confirm-actions">
       <button class="btn btn-secondary" id="confirmCancelBtn">Cancel</button>
-      <button class="btn btn-danger"    id="confirmDeleteBtn">Delete</button>
+      <button class="btn btn-destructive" id="confirmDeleteBtn">Delete</button>
     </div>
   </div>
 </div>
 
-<!-- ===== TOAST CONTAINER ===== -->
+
+<!-- TOAST -->
 <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
 
 <!-- ===================================================================
-     JAVASCRIPT  (ES Module — required for Firebase SDK)
+     JAVASCRIPT
 =================================================================== -->
 <script type="module">
 
-// ── Firebase SDK (loaded from Google CDN, no build step needed) ──────────
 import { initializeApp }  from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import {
-  getFirestore,
-  collection,
-  doc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  getDocs,
-  onSnapshot,
+  getFirestore, collection, doc,
+  addDoc, updateDoc, deleteDoc,
+  getDocs, onSnapshot,
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 
 
-/* ===========================================================
-   CONSTANTS
-=========================================================== */
+/* ── Constants ─────────────────────────────────────────── */
 const CATEGORIES          = ['Basic', 'Designer', 'Special', 'Braided Bracelet'];
 const LOW_STOCK_THRESHOLD = 3;
 
-
-/* ===========================================================
-   FIREBASE CONFIG
-=========================================================== */
+/* ── Firebase config ───────────────────────────────────── */
 const firebaseConfig = {
   apiKey:            'AIzaSyDgAuhtTuQEdagowFABLVY17H9ANMa42GI',
   authDomain:        'crystal-inventory-a92a4.firebaseapp.com',
@@ -462,71 +672,39 @@ const firebaseConfig = {
 
 
 /* ===========================================================
-   DATA LAYER  (DB)
-   ─────────────────────────────────────────────────────────
-   All reads/writes go through this object.
-   Uses Firestore as the backend — changes are instantly
-   reflected for every user viewing the page.
-
-   Read operations are synchronous against an in-memory cache
-   that is kept up-to-date by an onSnapshot listener.
-   Write operations are async (fire-and-forget from UI's POV).
+   DATA LAYER
 =========================================================== */
 const DB = (() => {
-
-  // ── Firebase setup ──
-  const _app  = initializeApp(firebaseConfig);
-  const _db   = getFirestore(_app);
-  const _col  = collection(_db, 'products');
-
-  // ── In-memory cache (populated by onSnapshot) ──
+  const _app = initializeApp(firebaseConfig);
+  const _db  = getFirestore(_app);
+  const _col = collection(_db, 'products');
   let _products  = [];
   let _unsubscribe = null;
 
-  /**
-   * Start the real-time Firestore listener.
-   * @param {Function} onChange  called every time data changes
-   */
   function startListening(onChange) {
-    _unsubscribe = onSnapshot(
-      _col,
-      snapshot => {
-        _products = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        onChange(_products);
-      },
-      err => console.error('[DB] Firestore error:', err)
+    _unsubscribe = onSnapshot(_col,
+      snap => { _products = snap.docs.map(d => ({ id: d.id, ...d.data() })); onChange(_products); },
+      err  => console.error('[DB]', err)
     );
   }
 
-  function stopListening() {
-    if (_unsubscribe) _unsubscribe();
-  }
+  function getAll()    { return [..._products]; }
+  function getById(id) { return _products.find(p => p.id === id) || null; }
 
-  // ── Synchronous reads (against in-memory cache) ──
-  function getAll()     { return [..._products]; }
-  function getById(id)  { return _products.find(p => p.id === id) || null; }
-
-  /**
-   * Filtered query used by the product grid.
-   * @param {{ search: string, category: string }} opts
-   */
   function query({ search = '', category = 'All' } = {}) {
-    let result = [..._products];
-    if (category && category !== 'All') {
-      result = result.filter(p => p.category === category);
-    }
+    let r = [..._products];
+    if (category !== 'All') r = r.filter(p => p.category === category);
     if (search) {
       const q = search.toLowerCase();
-      result = result.filter(p =>
-        p.name.toLowerCase().includes(q)  ||
-        p.sku.toLowerCase().includes(q)   ||
+      r = r.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        p.sku.toLowerCase().includes(q)  ||
         (p.notes && p.notes.toLowerCase().includes(q))
       );
     }
-    return result;
+    return r;
   }
 
-  /** Aggregate stats for the header cards */
   function getStats() {
     return {
       total:      _products.length,
@@ -536,76 +714,37 @@ const DB = (() => {
     };
   }
 
-  /** Returns true if the Firestore collection is empty */
-  async function isEmpty() {
-    const snap = await getDocs(_col);
-    return snap.empty;
-  }
+  async function isEmpty() { const s = await getDocs(_col); return s.empty; }
 
-  // ── Async writes (go directly to Firestore) ──
-
-  /**
-   * Add a new product.
-   * @param {Object} data — { name, sku, category, size, quantity, price, notes, image }
-   */
   async function add(data) {
     const now = new Date().toISOString();
     await addDoc(_col, {
-      name:      data.name,
-      sku:       data.sku,
-      category:  data.category,
-      size:      data.size,
-      quantity:  Number(data.quantity),
-      price:     Number(data.price),
-      notes:     data.notes || '',
-      image:     data.image || '',    // compressed base64 or empty
-      createdAt: now,
-      updatedAt: now,
-      // ── Stubs for future features ──
-      // status:       'active',
-      // stockHistory: [],
-      // shipments:    [],
+      name: data.name, sku: data.sku, category: data.category,
+      size: data.size, quantity: Number(data.quantity), price: Number(data.price),
+      notes: data.notes || '', image: data.image || '',
+      createdAt: now, updatedAt: now,
+      // status: 'active', stockHistory: [], shipments: [],  // future stubs
     });
   }
 
-  /**
-   * Update an existing product.
-   * @param {string} id
-   * @param {Object} data
-   */
   async function update(id, data) {
-    const ref = doc(_db, 'products', id);
-    await updateDoc(ref, {
-      name:      data.name,
-      sku:       data.sku,
-      category:  data.category,
-      size:      data.size,
-      quantity:  Number(data.quantity),
-      price:     Number(data.price),
-      notes:     data.notes || '',
-      image:     data.image || '',
+    await updateDoc(doc(_db, 'products', id), {
+      name: data.name, sku: data.sku, category: data.category,
+      size: data.size, quantity: Number(data.quantity), price: Number(data.price),
+      notes: data.notes || '', image: data.image || '',
       updatedAt: new Date().toISOString(),
     });
   }
 
-  /**
-   * Delete a product by ID.
-   * @param {string} id
-   */
-  async function remove(id) {
-    await deleteDoc(doc(_db, 'products', id));
-  }
+  async function remove(id) { await deleteDoc(doc(_db, 'products', id)); }
 
-  return { startListening, stopListening, getAll, getById, add, update, remove, query, getStats, isEmpty };
-
+  return { startListening, getAll, getById, add, update, remove, query, getStats, isEmpty };
 })();
 
 
 /* ===========================================================
-   IMAGE UTILITY
-   ─────────────────────────────────────────────────────────
-   Compresses images to max 600×600px JPEG before storing
-   in Firestore (keeps documents well under the 1 MB limit).
+   IMAGE COMPRESSION
+   Resizes to max 600×600 JPEG before storing in Firestore.
 =========================================================== */
 function compressImage(dataUrl, maxPx = 600, quality = 0.72) {
   return new Promise(resolve => {
@@ -616,10 +755,10 @@ function compressImage(dataUrl, maxPx = 600, quality = 0.72) {
         if (w >= h) { h = Math.round(h * maxPx / w); w = maxPx; }
         else        { w = Math.round(w * maxPx / h); h = maxPx; }
       }
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      resolve(canvas.toDataURL('image/jpeg', quality));
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(c.toDataURL('image/jpeg', quality));
     };
     img.src = dataUrl;
   });
@@ -627,97 +766,82 @@ function compressImage(dataUrl, maxPx = 600, quality = 0.72) {
 
 
 /* ===========================================================
+   SVG ICON HELPERS  (Lucide-style, inline)
+=========================================================== */
+const ICONS = {
+  check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`,
+  x:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>`,
+  edit:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>`,
+  trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/></svg>`,
+  image: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>`,
+  pkg:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 21H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/><path d="M9 3h10a2 2 0 0 1 2 2v7"/><path d="M12 12 9 3M12 12l3-9"/><path d="M2 9h20M17 17h4M19 15v4"/></svg>`,
+};
+
+
+/* ===========================================================
    UI LAYER
-   ─────────────────────────────────────────────────────────
-   Handles all DOM rendering and user-interaction events.
-   Calls DB for data — never touches Firestore directly.
 =========================================================== */
 const UI = (() => {
 
-  // ── Internal state ──
   let _filter    = 'All';
   let _search    = '';
-  let _editingId = null;   // null = add mode; string = edit mode
+  let _editingId = null;
   let _deleteId  = null;
-  let _imageData = '';     // compressed base64 of pending upload
+  let _imageData = '';
 
-  // ── DOM refs ──
-  const $loadingBanner   = document.getElementById('loadingBanner');
-  const $grid            = document.getElementById('productGrid');
-  const $filterTabs      = document.getElementById('filterTabs');
-  const $statsBar        = document.getElementById('statsBar');
-  const $searchInput     = document.getElementById('searchInput');
-  const $addProductBtn   = document.getElementById('addProductBtn');
-  const $modalOverlay    = document.getElementById('productModalOverlay');
-  const $modalTitle      = document.getElementById('modalTitle');
-  const $modalSaveBtn    = document.getElementById('modalSaveBtn');
-  const $modalCloseBtn   = document.getElementById('modalCloseBtn');
-  const $modalCancelBtn  = document.getElementById('modalCancelBtn');
-  const $productForm     = document.getElementById('productForm');
-  const $imageUploadArea = document.getElementById('imageUploadArea');
-  const $imagePlaceholder= document.getElementById('imagePlaceholder');
-  const $imagePreview    = document.getElementById('imagePreview');
-  const $imageInput      = document.getElementById('imageInput');
-  const $confirmOverlay  = document.getElementById('confirmOverlay');
-  const $confirmMessage  = document.getElementById('confirmMessage');
-  const $confirmCancel   = document.getElementById('confirmCancelBtn');
-  const $confirmDelete   = document.getElementById('confirmDeleteBtn');
-  const $toasts          = document.getElementById('toastContainer');
-  const $name            = document.getElementById('fieldName');
-  const $sku             = document.getElementById('fieldSku');
-  const $category        = document.getElementById('fieldCategory');
-  const $size            = document.getElementById('fieldSize');
-  const $quantity        = document.getElementById('fieldQuantity');
-  const $price           = document.getElementById('fieldPrice');
-  const $notes           = document.getElementById('fieldNotes');
+  /* DOM refs */
+  const $loading   = document.getElementById('loadingBanner');
+  const $grid      = document.getElementById('productGrid');
+  const $filters   = document.getElementById('filterTabs');
+  const $stats     = document.getElementById('statsBar');
+  const $search    = document.getElementById('searchInput');
+  const $addBtn    = document.getElementById('addProductBtn');
+  const $overlay   = document.getElementById('productModalOverlay');
+  const $mTitle    = document.getElementById('modalTitle');
+  const $mSave     = document.getElementById('modalSaveBtn');
+  const $mClose    = document.getElementById('modalCloseBtn');
+  const $mCancel   = document.getElementById('modalCancelBtn');
+  const $form      = document.getElementById('productForm');
+  const $imgArea   = document.getElementById('imageUploadArea');
+  const $imgPh     = document.getElementById('imagePlaceholder');
+  const $imgPrev   = document.getElementById('imagePreview');
+  const $imgInput  = document.getElementById('imageInput');
+  const $confOv    = document.getElementById('confirmOverlay');
+  const $confMsg   = document.getElementById('confirmMessage');
+  const $confCanc  = document.getElementById('confirmCancelBtn');
+  const $confDel   = document.getElementById('confirmDeleteBtn');
+  const $toasts    = document.getElementById('toastContainer');
+  const $fName     = document.getElementById('fieldName');
+  const $fSku      = document.getElementById('fieldSku');
+  const $fCat      = document.getElementById('fieldCategory');
+  const $fSize     = document.getElementById('fieldSize');
+  const $fQty      = document.getElementById('fieldQuantity');
+  const $fPrice    = document.getElementById('fieldPrice');
+  const $fNotes    = document.getElementById('fieldNotes');
 
-  // ── Utilities ──
+  /* Helpers */
+  const _fmt  = v   => '$' + Number(v).toFixed(2);
+  const _date = iso => iso
+    ? new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+    : '—';
+  const _esc  = s   => String(s ?? '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-  function _fmt(v)    { return '$' + Number(v).toFixed(2); }
-  function _date(iso) {
-    if (!iso) return '—';
-    return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-  }
-  function _esc(s) {
-    return String(s ?? '')
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
-
-  // ── Toast ──
+  /* Toast */
   function toast(msg, type = 'success') {
     const el = document.createElement('div');
-    el.className   = `toast ${type}`;
-    el.textContent = (type === 'success' ? '✓  ' : '✕  ') + msg;
+    el.className = `toast ${type}`;
+    el.innerHTML = (type === 'success' ? ICONS.check : ICONS.x) + `<span>${msg}</span>`;
     $toasts.appendChild(el);
     setTimeout(() => el.remove(), 3200);
   }
 
-  // ── Loading banner ──
-  function hideBanner() { $loadingBanner.classList.add('hidden'); }
-
-  // ── Category filter tabs ──
-  function _renderFilters() {
-    $filterTabs.innerHTML = '';
-    ['All', ...CATEGORIES].forEach(cat => {
-      const btn = document.createElement('button');
-      btn.className   = 'filter-tab' + (cat === _filter ? ' active' : '');
-      btn.textContent = cat;
-      btn.addEventListener('click', () => {
-        _filter = cat;
-        _renderFilters();
-        _renderProducts();
-      });
-      $filterTabs.appendChild(btn);
-    });
-  }
-
-  // ── Stats bar ──
+  /* Stats */
   function _renderStats() {
     const s = DB.getStats();
-    $statsBar.innerHTML = `
+    $stats.innerHTML = `
       <div class="stat-card">
-        <div class="stat-label">Total Products</div>
+        <div class="stat-label">Products</div>
         <div class="stat-value">${s.total}</div>
       </div>
       <div class="stat-card">
@@ -726,7 +850,7 @@ const UI = (() => {
       </div>
       <div class="stat-card">
         <div class="stat-label">Low Stock</div>
-        <div class="stat-value" style="color:${s.lowStock > 0 ? 'var(--warning)' : 'var(--primary)'}">${s.lowStock}</div>
+        <div class="stat-value ${s.lowStock > 0 ? 'warn' : ''}">${s.lowStock}</div>
         <div class="stat-sub">Below ${LOW_STOCK_THRESHOLD} units</div>
       </div>
       <div class="stat-card">
@@ -736,251 +860,230 @@ const UI = (() => {
       </div>`;
   }
 
-  // ── Product grid ──
+  /* Filters */
+  function _renderFilters() {
+    $filters.innerHTML = '';
+    ['All', ...CATEGORIES].forEach(cat => {
+      const b = document.createElement('button');
+      b.className   = 'filter-tab' + (cat === _filter ? ' active' : '');
+      b.textContent = cat;
+      b.addEventListener('click', () => { _filter = cat; _renderFilters(); _renderProducts(); });
+      $filters.appendChild(b);
+    });
+  }
+
+  /* Product grid */
   function _renderProducts() {
     const items = DB.query({ search: _search, category: _filter });
 
-    if (items.length === 0) {
+    if (!items.length) {
       $grid.innerHTML = `
         <div class="empty-state">
-          <div class="icon">💎</div>
+          <div>${ICONS.pkg}</div>
           <h3>No products found</h3>
-          <p>${_search || _filter !== 'All'
-            ? 'Try a different search or filter.'
-            : 'Click "Add Product" to add your first item.'}</p>
+          <p>${_search || _filter !== 'All' ? 'Try a different search or filter.' : 'Add your first product to get started.'}</p>
         </div>`;
       return;
     }
 
-    $grid.innerHTML = items.map(_buildCardHTML).join('');
-    $grid.querySelectorAll('[data-edit]').forEach(btn =>
-      btn.addEventListener('click', () => _openEdit(btn.dataset.edit))
+    $grid.innerHTML = items.map(p => {
+      const low = p.quantity < LOW_STOCK_THRESHOLD;
+      const img = p.image
+        ? `<img src="${p.image}" alt="${_esc(p.name)}" />`
+        : `<div class="card-img-placeholder">${ICONS.image}<span>No image</span></div>`;
+
+      return `
+        <div class="product-card${low ? ' low-stock' : ''}">
+          ${low ? '<span class="low-stock-indicator">Low Stock</span>' : ''}
+          <div class="card-image-wrap">${img}</div>
+          <div class="card-body">
+            <div class="card-meta-top">
+              <span class="card-category">${_esc(p.category)}</span>
+            </div>
+            <div class="card-name">${_esc(p.name)}</div>
+            <div class="card-sku">${_esc(p.sku)}</div>
+            <div class="card-stats">
+              <div>
+                <div class="stat-item-label">Qty</div>
+                <div class="stat-item-value${low ? ' warn' : ''}">${p.quantity}</div>
+              </div>
+              <div>
+                <div class="stat-item-label">Size</div>
+                <div class="stat-item-value">${_esc(p.size)}</div>
+              </div>
+            </div>
+            <div class="card-price">${_fmt(p.price)}</div>
+            ${p.notes ? `<div class="card-notes" title="${_esc(p.notes)}">${_esc(p.notes)}</div>` : ''}
+            <div class="card-updated">Updated ${_date(p.updatedAt)}</div>
+            <div class="card-actions">
+              <button class="btn btn-secondary btn-sm" data-edit="${p.id}">${ICONS.edit} Edit</button>
+              <button class="btn btn-ghost btn-sm"     data-delete="${p.id}">${ICONS.trash} Delete</button>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+    $grid.querySelectorAll('[data-edit]').forEach(b =>
+      b.addEventListener('click', () => _openEdit(b.dataset.edit))
     );
-    $grid.querySelectorAll('[data-delete]').forEach(btn =>
-      btn.addEventListener('click', () => _openConfirm(btn.dataset.delete))
+    $grid.querySelectorAll('[data-delete]').forEach(b =>
+      b.addEventListener('click', () => _openConfirm(b.dataset.delete))
     );
   }
 
-  function _buildCardHTML(p) {
-    const low = p.quantity < LOW_STOCK_THRESHOLD;
-    const img = p.image
-      ? `<img src="${p.image}" alt="${_esc(p.name)}" />`
-      : `<div class="card-image-placeholder">💎</div>`;
-    return `
-      <div class="product-card${low ? ' low-stock' : ''}">
-        ${low ? '<span class="low-stock-badge">⚠ Low Stock</span>' : ''}
-        <div class="card-image-wrap">${img}</div>
-        <div class="card-body">
-          <span class="card-category-badge">${_esc(p.category)}</span>
-          <div class="card-name">${_esc(p.name)}</div>
-          <div class="card-sku">SKU: ${_esc(p.sku)}</div>
-          <div class="card-meta">
-            <div><div class="meta-label">Qty</div><div class="meta-value${low ? ' warn' : ''}">${p.quantity}</div></div>
-            <div><div class="meta-label">Size</div><div class="meta-value">${_esc(p.size)}</div></div>
-          </div>
-          <div class="card-price">${_fmt(p.price)}</div>
-          ${p.notes ? `<div class="card-notes" title="${_esc(p.notes)}">${_esc(p.notes)}</div>` : ''}
-          <div class="card-updated">Updated ${_date(p.updatedAt)}</div>
-          <div class="card-actions">
-            <button class="btn btn-secondary btn-sm" data-edit="${p.id}">✏ Edit</button>
-            <button class="btn btn-danger btn-sm"    data-delete="${p.id}">🗑 Delete</button>
-          </div>
-        </div>
-      </div>`;
-  }
-
-  // ── Full re-render (triggered by Firestore onSnapshot) ──
+  /* Full refresh — triggered by Firestore onSnapshot */
   function refresh() {
-    hideBanner();
+    $loading.classList.add('hidden');
     _renderStats();
     _renderFilters();
     _renderProducts();
   }
 
-  // ── Category select (form) ──
-  function _populateCategorySelect() {
-    $category.innerHTML = '<option value="">Select category…</option>';
-    CATEGORIES.forEach(cat => {
+  /* Category select */
+  function _populateCategories() {
+    $fCat.innerHTML = '<option value="">Select…</option>';
+    CATEGORIES.forEach(c => {
       const o = document.createElement('option');
-      o.value = cat; o.textContent = cat;
-      $category.appendChild(o);
+      o.value = c; o.textContent = c;
+      $fCat.appendChild(o);
     });
   }
 
-  // ── Image preview helpers ──
-  function _showImagePreview(src) {
-    $imagePreview.src = src;
-    $imagePreview.style.display = 'block';
-    $imagePlaceholder.style.display = 'none';
-    $imageUploadArea.classList.add('has-image');
+  /* Image preview */
+  function _showPreview(src) {
+    $imgPrev.src = src; $imgPrev.style.display = 'block';
+    $imgPh.style.display = 'none'; $imgArea.classList.add('has-image');
   }
-  function _resetImagePreview() {
-    $imagePreview.src = '';
-    $imagePreview.style.display = 'none';
-    $imagePlaceholder.style.display = 'block';
-    $imageUploadArea.classList.remove('has-image');
-    $imageInput.value = '';
+  function _resetPreview() {
+    $imgPrev.src = ''; $imgPrev.style.display = 'none';
+    $imgPh.style.display = 'block'; $imgArea.classList.remove('has-image');
+    $imgInput.value = '';
   }
 
-  // ── Modal ──
+  /* Modal */
   function _openAdd() {
     _editingId = null; _imageData = '';
-    $productForm.reset();
-    _resetImagePreview();
-    $modalTitle.textContent   = 'Add Product';
-    $modalSaveBtn.textContent = 'Save Product';
-    $modalOverlay.classList.add('open');
-    requestAnimationFrame(() => $name.focus());
+    $form.reset(); _resetPreview();
+    $mTitle.textContent = 'Add Product';
+    $mSave.textContent  = 'Save Product';
+    $overlay.classList.add('open');
+    requestAnimationFrame(() => $fName.focus());
   }
 
   function _openEdit(id) {
-    const p = DB.getById(id);
-    if (!p) return;
+    const p = DB.getById(id); if (!p) return;
     _editingId = id; _imageData = p.image || '';
-    $name.value     = p.name;
-    $sku.value      = p.sku;
-    $category.value = p.category;
-    $size.value     = p.size;
-    $quantity.value = p.quantity;
-    $price.value    = p.price;
-    $notes.value    = p.notes;
-    p.image ? _showImagePreview(p.image) : _resetImagePreview();
-    $modalTitle.textContent   = 'Edit Product';
-    $modalSaveBtn.textContent = 'Update Product';
-    $modalOverlay.classList.add('open');
-    requestAnimationFrame(() => $name.focus());
+    $fName.value  = p.name;  $fSku.value   = p.sku;
+    $fCat.value   = p.category; $fSize.value = p.size;
+    $fQty.value   = p.quantity; $fPrice.value = p.price;
+    $fNotes.value = p.notes;
+    p.image ? _showPreview(p.image) : _resetPreview();
+    $mTitle.textContent = 'Edit Product';
+    $mSave.textContent  = 'Update Product';
+    $overlay.classList.add('open');
+    requestAnimationFrame(() => $fName.focus());
   }
 
   function _closeModal() {
-    $modalOverlay.classList.remove('open');
+    $overlay.classList.remove('open');
     _editingId = null; _imageData = '';
   }
 
-  // ── Save (async — writes to Firestore) ──
   async function _handleSave() {
-    if (!$productForm.checkValidity()) { $productForm.reportValidity(); return; }
-
-    $modalSaveBtn.disabled = true;
-    $modalSaveBtn.textContent = 'Saving…';
-
+    if (!$form.checkValidity()) { $form.reportValidity(); return; }
+    $mSave.disabled = true; $mSave.textContent = 'Saving…';
     const data = {
-      name:     $name.value.trim(),
-      sku:      $sku.value.trim(),
-      category: $category.value,
-      size:     $size.value.trim(),
-      quantity: $quantity.value,
-      price:    $price.value,
-      notes:    $notes.value.trim(),
-      image:    _imageData,
+      name: $fName.value.trim(), sku: $fSku.value.trim(),
+      category: $fCat.value, size: $fSize.value.trim(),
+      quantity: $fQty.value, price: $fPrice.value,
+      notes: $fNotes.value.trim(), image: _imageData,
     };
-
     try {
-      if (_editingId) {
-        await DB.update(_editingId, data);
-        toast('Product updated.');
-      } else {
-        await DB.add(data);
-        toast('Product added.');
-      }
+      if (_editingId) { await DB.update(_editingId, data); toast('Product updated.'); }
+      else            { await DB.add(data);                toast('Product added.'); }
       _closeModal();
-      // No manual refresh needed — onSnapshot fires automatically
-    } catch (err) {
-      console.error('[UI] save failed:', err);
-      toast('Save failed. Please try again.', 'error');
+    } catch (e) {
+      console.error(e); toast('Save failed. Try again.', 'error');
     } finally {
-      $modalSaveBtn.disabled = false;
-      $modalSaveBtn.textContent = _editingId ? 'Update Product' : 'Save Product';
+      $mSave.disabled = false;
+      $mSave.textContent = _editingId ? 'Update Product' : 'Save Product';
     }
   }
 
-  // ── Confirm delete ──
+  /* Confirm dialog */
   function _openConfirm(id) {
     _deleteId = id;
     const p = DB.getById(id);
-    $confirmMessage.textContent = p
-      ? `Delete "${p.name}"? This cannot be undone.`
-      : 'Are you sure? This cannot be undone.';
-    $confirmOverlay.classList.add('open');
+    $confMsg.textContent = p
+      ? `"${p.name}" will be permanently deleted.`
+      : 'This product will be permanently deleted.';
+    $confOv.classList.add('open');
   }
-  function _closeConfirm() {
-    $confirmOverlay.classList.remove('open');
-    _deleteId = null;
-  }
+  function _closeConfirm() { $confOv.classList.remove('open'); _deleteId = null; }
 
   async function _handleDelete() {
     if (!_deleteId) return;
-    $confirmDelete.disabled = true;
+    $confDel.disabled = true;
     try {
-      await DB.remove(_deleteId);
-      toast('Product deleted.');
-      _closeConfirm();
-    } catch (err) {
-      console.error('[UI] delete failed:', err);
-      toast('Delete failed. Please try again.', 'error');
-      $confirmDelete.disabled = false;
+      await DB.remove(_deleteId); toast('Product deleted.'); _closeConfirm();
+    } catch (e) {
+      console.error(e); toast('Delete failed.', 'error'); $confDel.disabled = false;
     }
   }
 
-  // ── Event wiring ──
+  /* Init */
   function init() {
-    _populateCategorySelect();
+    _populateCategories();
 
-    $addProductBtn.addEventListener('click', _openAdd);
-    $modalCloseBtn.addEventListener('click',  _closeModal);
-    $modalCancelBtn.addEventListener('click', _closeModal);
-    $modalSaveBtn.addEventListener('click',   _handleSave);
-    $modalOverlay.addEventListener('click',   e => { if (e.target === $modalOverlay) _closeModal(); });
+    $addBtn.addEventListener('click', _openAdd);
+    $mClose.addEventListener('click',  _closeModal);
+    $mCancel.addEventListener('click', _closeModal);
+    $mSave.addEventListener('click',   _handleSave);
+    $overlay.addEventListener('click', e => { if (e.target === $overlay) _closeModal(); });
 
-    $confirmCancel.addEventListener('click',  _closeConfirm);
-    $confirmDelete.addEventListener('click',  _handleDelete);
-    $confirmOverlay.addEventListener('click', e => { if (e.target === $confirmOverlay) _closeConfirm(); });
+    $confCanc.addEventListener('click',  _closeConfirm);
+    $confDel.addEventListener('click',   _handleDelete);
+    $confOv.addEventListener('click', e => { if (e.target === $confOv) _closeConfirm(); });
 
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') { _closeModal(); _closeConfirm(); }
     });
 
-    // Search with rAF debounce
-    let _frame;
-    $searchInput.addEventListener('input', e => {
-      cancelAnimationFrame(_frame);
-      _frame = requestAnimationFrame(() => {
-        _search = e.target.value.trim();
-        _renderProducts();
-      });
+    let _f;
+    $search.addEventListener('input', e => {
+      cancelAnimationFrame(_f);
+      _f = requestAnimationFrame(() => { _search = e.target.value.trim(); _renderProducts(); });
     });
 
-    // Image upload + compress
-    $imageUploadArea.addEventListener('click', () => $imageInput.click());
-    $imageInput.addEventListener('change', async e => {
-      const file = e.target.files[0];
-      if (!file) return;
+    $imgArea.addEventListener('click', () => $imgInput.click());
+    $imgInput.addEventListener('change', async e => {
+      const file = e.target.files[0]; if (!file) return;
       const reader = new FileReader();
       reader.onload = async ev => {
         _imageData = await compressImage(ev.target.result);
-        _showImagePreview(_imageData);
+        _showPreview(_imageData);
       };
       reader.readAsDataURL(file);
     });
   }
 
   return { init, refresh };
-
 })();
 
 
 /* ===========================================================
-   SAMPLE DATA  —  seeded once if Firestore is empty
+   SAMPLE DATA
 =========================================================== */
 async function seedSampleData() {
   const samples = [
-    { name: 'Rose Quartz Stretch Bracelet', sku: 'RQ-001',   category: 'Basic',            size: '6mm',       quantity: 12, price: 18.00, notes: 'Soft pink beads. Popular everyday seller.',               image: '' },
-    { name: 'Amethyst Premium Bracelet',    sku: 'AM-D001',  category: 'Designer',          size: '8mm',       quantity: 5,  price: 45.00, notes: 'Deep purple amethyst with silver accent charm.',           image: '' },
-    { name: 'Tiger Eye Power Bracelet',     sku: 'TE-S001',  category: 'Special',           size: '10mm',      quantity: 2,  price: 65.00, notes: 'Limited edition. Gold-brown tiger eye stones.',            image: '' },
-    { name: 'Lapis Lazuli Braided',         sku: 'LL-BB001', category: 'Braided Bracelet',  size: 'One Size',  quantity: 8,  price: 35.00, notes: 'Blue lapis chips woven with gold thread.',                 image: '' },
-    { name: 'Clear Quartz Clarity Bracelet',sku: 'CQ-002',   category: 'Basic',             size: '6mm',       quantity: 1,  price: 15.00, notes: 'Crystal clear quartz. Good for focus and clarity.',        image: '' },
-    { name: 'Black Obsidian Protection',    sku: 'BO-S002',  category: 'Special',           size: '8mm',       quantity: 4,  price: 55.00, notes: 'Matte black obsidian. Grounding & protection stone.',      image: '' },
-    { name: 'Citrine Braided Wrap',         sku: 'CT-BB002', category: 'Braided Bracelet',  size: 'Adjustable',quantity: 6,  price: 40.00, notes: 'Sunny yellow citrine chips with tan leather braid.',        image: '' },
-    { name: 'Turquoise Designer Cuff',      sku: 'TQ-D002',  category: 'Designer',          size: 'S/M',       quantity: 3,  price: 78.00, notes: 'Genuine turquoise stones in a sterling silver setting.',   image: '' },
+    { name: 'Rose Quartz Stretch Bracelet', sku: 'RQ-001',   category: 'Basic',           size: '6mm',        quantity: 12, price: 18.00, notes: 'Soft pink beads. Popular everyday seller.',              image: '' },
+    { name: 'Amethyst Premium Bracelet',    sku: 'AM-D001',  category: 'Designer',         size: '8mm',        quantity: 5,  price: 45.00, notes: 'Deep purple amethyst with silver accent charm.',          image: '' },
+    { name: 'Tiger Eye Power Bracelet',     sku: 'TE-S001',  category: 'Special',          size: '10mm',       quantity: 2,  price: 65.00, notes: 'Limited edition. Gold-brown tiger eye stones.',           image: '' },
+    { name: 'Lapis Lazuli Braided',         sku: 'LL-BB001', category: 'Braided Bracelet', size: 'One Size',   quantity: 8,  price: 35.00, notes: 'Blue lapis chips woven with gold thread.',                image: '' },
+    { name: 'Clear Quartz Clarity',         sku: 'CQ-002',   category: 'Basic',            size: '6mm',        quantity: 1,  price: 15.00, notes: 'Crystal clear quartz. Good for focus.',                  image: '' },
+    { name: 'Black Obsidian Protection',    sku: 'BO-S002',  category: 'Special',          size: '8mm',        quantity: 4,  price: 55.00, notes: 'Matte black obsidian. Grounding & protection stone.',     image: '' },
+    { name: 'Citrine Braided Wrap',         sku: 'CT-BB002', category: 'Braided Bracelet', size: 'Adjustable', quantity: 6,  price: 40.00, notes: 'Sunny yellow citrine chips with tan leather braid.',      image: '' },
+    { name: 'Turquoise Designer Cuff',      sku: 'TQ-D002',  category: 'Designer',         size: 'S/M',        quantity: 3,  price: 78.00, notes: 'Genuine turquoise in a sterling silver setting.',         image: '' },
   ];
   for (const p of samples) await DB.add(p);
 }
@@ -991,11 +1094,8 @@ async function seedSampleData() {
 =========================================================== */
 UI.init();
 
-// Seed only if Firestore is empty, then start real-time listener
 (async () => {
   if (await DB.isEmpty()) await seedSampleData();
-  // onSnapshot keeps UI in sync with every Firestore change —
-  // including changes made by your partner on their device.
   DB.startListening(() => UI.refresh());
 })();
 
