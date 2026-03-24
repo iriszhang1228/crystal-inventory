@@ -234,17 +234,17 @@
     }
     .product-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
     .product-card.low-stock   { border-color: var(--warning-border); }
-    .product-card.out-of-stock { border-color: #fca5a5; opacity: .75; }
+    .product-card.sold { border-color: #d4d4d8; opacity: .7; }
 
     .low-stock-indicator,
-    .out-of-stock-indicator {
+    .sold-indicator {
       position: absolute; top: 10px; right: 10px;
       font-size: 10px; font-weight: 600;
       padding: 2px 8px; border-radius: 20px;
       border: 1px solid; letter-spacing: .02em;
     }
-    .low-stock-indicator   { background: var(--warning-bg); color: var(--warning-fg); border-color: var(--warning-border); }
-    .out-of-stock-indicator { background: #fef2f2; color: #991b1b; border-color: #fca5a5; }
+    .low-stock-indicator { background: var(--warning-bg); color: var(--warning-fg); border-color: var(--warning-border); }
+    .sold-indicator      { background: #f4f4f5; color: #52525b; border-color: #d4d4d8; }
 
     .card-actions { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--border); padding-top: 12px; }
     .card-actions-row { display: flex; gap: 6px; }
@@ -298,6 +298,7 @@
     .card-price   { font-size: 18px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 6px; }
     .card-notes   { font-size: 11px; color: var(--fg-muted); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .card-updated { font-size: 10px; color: var(--fg-muted); margin-bottom: 12px; flex: 1; }
+    .card-date    { font-size: 10px; color: var(--fg-muted); margin-bottom: 2px; }
 
     .card-actions {
       display: flex; gap: 6px;
@@ -716,6 +717,15 @@ const DB = (() => {
         (p.notes && p.notes.toLowerCase().includes(q))
       );
     }
+    // Available items first, then sold items ordered by soldAt ascending
+    // (earliest sold appears furthest back)
+    r.sort((a, b) => {
+      const aSold = a.quantity === 0, bSold = b.quantity === 0;
+      if (!aSold && bSold)  return -1;
+      if (aSold  && !bSold) return  1;
+      if (aSold  && bSold)  return new Date(a.soldAt || 0) - new Date(b.soldAt || 0);
+      return 0;
+    });
     return r;
   }
 
@@ -723,8 +733,9 @@ const DB = (() => {
     return {
       total:      _products.length,
       totalUnits: _products.reduce((s, p) => s + p.quantity, 0),
-      lowStock:   _products.filter(p => p.quantity < LOW_STOCK_THRESHOLD).length,
+      lowStock:   _products.filter(p => p.quantity > 0 && p.quantity < LOW_STOCK_THRESHOLD).length,
       totalValue: _products.reduce((s, p) => s + p.quantity * p.price, 0),
+      gmv:        _products.reduce((s, p) => s + (p.soldRevenue || 0), 0),
     };
   }
 
@@ -841,8 +852,9 @@ const UI = (() => {
   const $fNotes    = document.getElementById('fieldNotes');
 
   /* Helpers */
-  const _catClass = cat => ({ 'Basic': 'cat-basic', 'Designer': 'cat-designer', 'Special': 'cat-special', 'Braided Bracelet': 'cat-braided' }[cat] || 'cat-basic');
-  const _fmt  = v   => '$' + Number(v).toFixed(2);
+  const _catClass   = cat => ({ 'Basic': 'cat-basic', 'Designer': 'cat-designer', 'Special': 'cat-special', 'Braided Bracelet': 'cat-braided' }[cat] || 'cat-basic');
+  const _fmt        = v   => '$' + Number(v).toFixed(2);
+  const _dateShort  = iso => { if (!iso) return '—'; const d = new Date(iso); return `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}/${d.getFullYear()}`; };
   const _date = iso => iso
     ? new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
     : '—';
@@ -879,6 +891,11 @@ const UI = (() => {
         <div class="stat-label">Inventory Value</div>
         <div class="stat-value">${_fmt(s.totalValue)}</div>
         <div class="stat-sub">At selling price</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Profit (GMV)</div>
+        <div class="stat-value">${_fmt(s.gmv)}</div>
+        <div class="stat-sub">Total sales revenue</div>
       </div>`;
   }
 
@@ -914,11 +931,11 @@ const UI = (() => {
         ? `<img src="${p.image}" alt="${_esc(p.name)}" />`
         : `<div class="card-img-placeholder">${ICONS.image}<span>No image</span></div>`;
 
-      const oos = p.quantity === 0;
+      const sold = p.quantity === 0;
       return `
-        <div class="product-card${oos ? ' out-of-stock' : (low ? ' low-stock' : '')}">
-          ${oos ? '<span class="out-of-stock-indicator">Out of Stock</span>'
-                : low ? '<span class="low-stock-indicator">Low Stock</span>' : ''}
+        <div class="product-card${sold ? ' sold' : (low ? ' low-stock' : '')}">
+          ${sold ? '<span class="sold-indicator">Sold</span>'
+                 : low ? '<span class="low-stock-indicator">Low Stock</span>' : ''}
           <div class="card-image-wrap">${img}</div>
           <div class="card-body">
             <div class="card-meta-top">
@@ -929,7 +946,7 @@ const UI = (() => {
             <div class="card-stats">
               <div>
                 <div class="stat-item-label">Qty</div>
-                <div class="stat-item-value${oos ? ' warn' : (low ? ' warn' : '')}">${p.quantity}</div>
+                <div class="stat-item-value${low ? ' warn' : ''}">${p.quantity}</div>
               </div>
               <div>
                 <div class="stat-item-label">Size</div>
@@ -938,13 +955,15 @@ const UI = (() => {
             </div>
             <div class="card-price">${_fmt(p.price)}</div>
             ${p.notes ? `<div class="card-notes" title="${_esc(p.notes)}">${_esc(p.notes)}</div>` : ''}
-            <div class="card-updated">Updated ${_date(p.updatedAt)}</div>
+            <div class="card-date">Created on ${_dateShort(p.createdAt)}</div>
+            ${sold && p.soldAt ? `<div class="card-date">Sold on ${_dateShort(p.soldAt)}</div>` : ''}
+            <div class="card-updated" style="margin-top:2px;">Updated ${_date(p.updatedAt)}</div>
             <div class="card-actions">
               <div class="card-actions-row">
                 <button class="btn btn-secondary btn-sm" data-edit="${p.id}">${ICONS.edit} Edit</button>
                 <button class="btn btn-ghost btn-sm"     data-delete="${p.id}">${ICONS.trash} Delete</button>
               </div>
-              <button class="btn btn-primary btn-sm" data-sell="${p.id}" ${oos ? 'disabled' : ''}>${ICONS.check} Mark as Sold</button>
+              <button class="btn btn-primary btn-sm" data-sell="${p.id}" ${sold ? 'disabled' : ''}>${ICONS.check} Mark as Sold</button>
             </div>
           </div>
         </div>`;
@@ -1058,13 +1077,20 @@ const UI = (() => {
   }
   async function _handleSell() {
     if (!_sellId) return;
-    const p    = DB.getById(_sellId);
-    const qty  = parseInt($sellQty.value, 10);
+    const p   = DB.getById(_sellId);
+    const qty = parseInt($sellQty.value, 10);
     if (!p || isNaN(qty) || qty < 1) { toast('Enter a valid quantity.', 'error'); return; }
     if (qty > p.quantity) { toast(`Only ${p.quantity} unit${p.quantity !== 1 ? 's' : ''} available.`, 'error'); return; }
     $sellConf.disabled = true;
+    const newQty    = p.quantity - qty;
+    const updateData = {
+      ...p,
+      quantity:     newQty,
+      soldRevenue:  (p.soldRevenue || 0) + qty * p.price,  // accumulate revenue
+      soldAt:       newQty === 0 ? new Date().toISOString() : (p.soldAt || null), // stamp when fully sold
+    };
     try {
-      await DB.update(_sellId, { ...p, quantity: p.quantity - qty });
+      await DB.update(_sellId, updateData);
       toast(`${qty} unit${qty !== 1 ? 's' : ''} marked as sold.`);
       _closeSell();
     } catch (e) {
