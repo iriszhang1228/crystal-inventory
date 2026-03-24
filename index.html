@@ -964,7 +964,6 @@ const UI = (() => {
             </div>
             <div class="card-price">${_fmt(p.price)}</div>
             ${p.notes ? `<div class="card-notes" title="${_esc(p.notes)}">${_esc(p.notes)}</div>` : ''}
-            ${sold && p.soldAt ? `<div class="card-date">Sold on ${_dateShort(p.soldAt)}</div>` : ''}
             <div class="card-actions">
               <div class="card-actions-row">
                 <button class="btn btn-secondary btn-sm" data-edit="${p.id}">${ICONS.edit} Edit</button>
