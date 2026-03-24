@@ -29,9 +29,6 @@
       --transition:     0.2s ease;
     }
 
-    /* ===================================================================
-       RESET & BASE
-    =================================================================== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -40,9 +37,7 @@
       min-height: 100vh;
     }
 
-    /* ===================================================================
-       HEADER
-    =================================================================== */
+    /* ===== HEADER ===== */
     .header {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
@@ -63,13 +58,10 @@
       font-size: 20px;
       font-weight: 700;
       color: var(--primary);
-      text-decoration: none;
     }
     .header-brand .logo { font-size: 26px; }
 
-    /* ===================================================================
-       BUTTONS
-    =================================================================== */
+    /* ===== BUTTONS ===== */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -80,29 +72,34 @@
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
-      transition: background var(--transition), box-shadow var(--transition);
+      transition: background var(--transition);
       white-space: nowrap;
     }
-    .btn-primary  { background: var(--primary); color: #fff; }
-    .btn-primary:hover  { background: var(--primary-dark); }
+    .btn:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-primary   { background: var(--primary); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
     .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover { background: #f9fafb; }
-    .btn-danger   { background: var(--danger); color: #fff; }
-    .btn-danger:hover   { background: #dc2626; }
+    .btn-secondary:hover:not(:disabled) { background: #f9fafb; }
+    .btn-danger    { background: var(--danger); color: #fff; }
+    .btn-danger:hover:not(:disabled) { background: #dc2626; }
     .btn-sm { padding: 6px 12px; font-size: 13px; }
 
-    /* ===================================================================
-       LAYOUT
-    =================================================================== */
-    .main {
-      max-width: 1440px;
-      margin: 0 auto;
-      padding: 28px 28px 60px;
-    }
+    /* ===== LAYOUT ===== */
+    .main { max-width: 1440px; margin: 0 auto; padding: 28px 28px 60px; }
 
-    /* ===================================================================
-       STATS BAR
-    =================================================================== */
+    /* ===== LOADING BANNER ===== */
+    .loading-banner {
+      text-align: center;
+      padding: 12px;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 14px;
+      font-weight: 500;
+      border-bottom: 1px solid var(--accent);
+    }
+    .loading-banner.hidden { display: none; }
+
+    /* ===== STATS BAR ===== */
     .stats-bar {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
@@ -120,29 +117,13 @@
     .stat-value { font-size: 30px; font-weight: 800; color: var(--primary); margin-top: 4px; line-height: 1; }
     .stat-sub   { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
 
-    /* ===================================================================
-       TOOLBAR (search + add)
-    =================================================================== */
-    .toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    .search-wrapper {
-      position: relative;
-      flex: 1;
-      min-width: 220px;
-    }
+    /* ===== TOOLBAR ===== */
+    .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
+    .search-wrapper { position: relative; flex: 1; min-width: 220px; }
     .search-icon {
-      position: absolute;
-      left: 11px;
-      top: 50%;
+      position: absolute; left: 11px; top: 50%;
       transform: translateY(-50%);
-      font-size: 15px;
-      pointer-events: none;
-      color: var(--text-secondary);
+      font-size: 15px; pointer-events: none; color: var(--text-secondary);
     }
     .search-input {
       width: 100%;
@@ -153,21 +134,10 @@
       background: var(--surface);
       transition: border-color var(--transition), box-shadow var(--transition);
     }
-    .search-input:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(167,139,250,.18);
-    }
+    .search-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(167,139,250,.18); }
 
-    /* ===================================================================
-       CATEGORY FILTER TABS
-    =================================================================== */
-    .filters {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 22px;
-    }
+    /* ===== FILTER TABS ===== */
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
     .filter-tab {
       padding: 6px 18px;
       border-radius: 20px;
@@ -182,18 +152,10 @@
     .filter-tab:hover { border-color: var(--accent); color: var(--primary); }
     .filter-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-    /* ===================================================================
-       PRODUCT GRID
-    =================================================================== */
-    .product-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 22px;
-    }
+    /* ===== PRODUCT GRID ===== */
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 22px; }
 
-    /* ===================================================================
-       PRODUCT CARD
-    =================================================================== */
+    /* ===== PRODUCT CARD ===== */
     .product-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -206,311 +168,159 @@
       flex-direction: column;
     }
     .product-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-
-    /* Low stock visual treatment */
     .product-card.low-stock { border-color: var(--warning); }
     .low-stock-badge {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: var(--warning);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 3px 9px;
-      border-radius: 20px;
-      text-transform: uppercase;
-      letter-spacing: .04em;
-      z-index: 1;
+      position: absolute; top: 10px; right: 10px;
+      background: var(--warning); color: #fff;
+      font-size: 11px; font-weight: 700;
+      padding: 3px 9px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: .04em; z-index: 1;
     }
-
     .card-image-wrap {
-      width: 100%;
-      height: 185px;
+      width: 100%; height: 185px;
       background: var(--primary-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; flex-shrink: 0;
     }
-    .card-image-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    .card-image-wrap img { width: 100%; height: 100%; object-fit: cover; }
     .card-image-placeholder { font-size: 52px; opacity: .45; }
-
-    .card-body {
-      padding: 16px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
+    .card-body { padding: 16px; flex: 1; display: flex; flex-direction: column; }
     .card-category-badge {
-      display: inline-block;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      color: var(--primary);
-      background: var(--primary-light);
-      padding: 2px 9px;
-      border-radius: 20px;
-      margin-bottom: 8px;
+      display: inline-block; font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .06em;
+      color: var(--primary); background: var(--primary-light);
+      padding: 2px 9px; border-radius: 20px; margin-bottom: 8px;
     }
-    .card-name { font-size: 16px; font-weight: 700; margin-bottom: 3px; }
-    .card-sku  { font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; }
-
-    .card-meta {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
+    .card-name  { font-size: 16px; font-weight: 700; margin-bottom: 3px; }
+    .card-sku   { font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; }
+    .card-meta  { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
     .meta-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 1px; }
     .meta-value { font-size: 14px; font-weight: 600; }
     .meta-value.warn { color: var(--warning); }
-
-    .card-price {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--primary);
-      margin-bottom: 8px;
-    }
-    .card-notes {
-      font-size: 12px;
-      color: var(--text-secondary);
-      font-style: italic;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 6px;
-    }
+    .card-price   { font-size: 20px; font-weight: 800; color: var(--primary); margin-bottom: 8px; }
+    .card-notes   { font-size: 12px; color: var(--text-secondary); font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px; }
     .card-updated { font-size: 11px; color: var(--text-secondary); margin-bottom: 12px; flex: 1; }
-
-    .card-actions {
-      display: flex;
-      gap: 8px;
-      border-top: 1px solid var(--border);
-      padding-top: 12px;
-    }
+    .card-actions { display: flex; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; }
     .card-actions .btn { flex: 1; justify-content: center; }
 
-    /* ===================================================================
-       EMPTY STATE
-    =================================================================== */
-    .empty-state {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 80px 20px;
-      color: var(--text-secondary);
-    }
+    /* ===== EMPTY STATE ===== */
+    .empty-state { grid-column: 1 / -1; text-align: center; padding: 80px 20px; color: var(--text-secondary); }
     .empty-state .icon { font-size: 60px; margin-bottom: 16px; }
     .empty-state h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-    .empty-state p  { font-size: 14px; }
 
-    /* ===================================================================
-       MODAL
-    =================================================================== */
+    /* ===== MODAL ===== */
     .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, .50);
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.50);
       z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       padding: 20px;
-      opacity: 0;
-      visibility: hidden;
+      opacity: 0; visibility: hidden;
       transition: opacity var(--transition), visibility var(--transition);
     }
     .modal-overlay.open { opacity: 1; visibility: visible; }
-
     .modal {
       background: var(--surface);
       border-radius: var(--radius);
-      width: 100%;
-      max-width: 620px;
-      max-height: 92vh;
+      width: 100%; max-width: 620px; max-height: 92vh;
       overflow-y: auto;
       box-shadow: var(--shadow-lg);
       transform: scale(.96) translateY(-12px);
       transition: transform var(--transition);
     }
     .modal-overlay.open .modal { transform: scale(1) translateY(0); }
-
     .modal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
       padding: 20px 24px;
       border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      background: var(--surface);
-      z-index: 1;
+      position: sticky; top: 0;
+      background: var(--surface); z-index: 1;
     }
-    .modal-title { font-size: 18px; font-weight: 700; }
-    .modal-close {
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: var(--text-secondary);
-      padding: 4px 8px;
-      border-radius: 4px;
-      line-height: 1;
-    }
+    .modal-title  { font-size: 18px; font-weight: 700; }
+    .modal-close  { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-secondary); padding: 4px 8px; border-radius: 4px; line-height: 1; }
     .modal-close:hover { background: var(--border); }
     .modal-body   { padding: 24px; }
-    .modal-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      padding: 16px 24px;
-      border-top: 1px solid var(--border);
-    }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; border-top: 1px solid var(--border); }
 
-    /* ===================================================================
-       FORM
-    =================================================================== */
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
+    /* ===== FORM ===== */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .form-group { display: flex; flex-direction: column; gap: 5px; }
     .form-group.full { grid-column: 1 / -1; }
-
     label { font-size: 13px; font-weight: 500; }
     .required::after { content: ' *'; color: var(--danger); }
-
-    input[type="text"],
-    input[type="number"],
-    select,
-    textarea {
+    input[type="text"], input[type="number"], select, textarea {
       padding: 9px 12px;
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      font-size: 14px;
-      font-family: inherit;
-      background: var(--surface);
-      color: var(--text);
+      font-size: 14px; font-family: inherit;
+      background: var(--surface); color: var(--text);
       transition: border-color var(--transition), box-shadow var(--transition);
     }
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(167,139,250,.18);
-    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(167,139,250,.18); }
     textarea { resize: vertical; min-height: 80px; }
 
-    /* ===================================================================
-       IMAGE UPLOAD AREA
-    =================================================================== */
+    /* ===== IMAGE UPLOAD ===== */
     .image-upload-area {
       border: 2px dashed var(--border);
       border-radius: var(--radius-sm);
-      padding: 24px;
-      text-align: center;
-      cursor: pointer;
+      padding: 24px; text-align: center; cursor: pointer;
       transition: border-color var(--transition), background var(--transition);
     }
     .image-upload-area:hover { border-color: var(--accent); background: var(--primary-light); }
     .image-upload-area.has-image { padding: 0; border-style: solid; border-color: var(--accent); }
-    .image-upload-area.has-image img {
-      width: 100%;
-      max-height: 200px;
-      object-fit: cover;
-      border-radius: calc(var(--radius-sm) - 2px);
-      display: block;
-    }
-    .upload-icon  { font-size: 34px; }
-    .upload-hint  { font-size: 13px; color: var(--text-secondary); margin-top: 8px; }
+    .image-upload-area.has-image img { width: 100%; max-height: 200px; object-fit: cover; border-radius: calc(var(--radius-sm) - 2px); display: block; }
+    .upload-icon { font-size: 34px; }
+    .upload-hint { font-size: 13px; color: var(--text-secondary); margin-top: 8px; }
     .upload-hint small { display: block; font-size: 11px; margin-top: 2px; }
     #imageInput { display: none; }
 
-    /* ===================================================================
-       CONFIRM DIALOG
-    =================================================================== */
+    /* ===== CONFIRM DIALOG ===== */
     .confirm-overlay {
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background: rgba(0,0,0,.5);
       z-index: 2000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      opacity: 0;
-      visibility: hidden;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px; opacity: 0; visibility: hidden;
       transition: opacity var(--transition), visibility var(--transition);
     }
     .confirm-overlay.open { opacity: 1; visibility: visible; }
-    .confirm-dialog {
-      background: var(--surface);
-      border-radius: var(--radius);
-      padding: 32px 28px;
-      max-width: 380px;
-      width: 100%;
-      box-shadow: var(--shadow-lg);
-      text-align: center;
-    }
+    .confirm-dialog { background: var(--surface); border-radius: var(--radius); padding: 32px 28px; max-width: 380px; width: 100%; box-shadow: var(--shadow-lg); text-align: center; }
     .confirm-icon    { font-size: 42px; margin-bottom: 12px; }
     .confirm-title   { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
     .confirm-message { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; }
     .confirm-actions { display: flex; gap: 12px; justify-content: center; }
 
-    /* ===================================================================
-       TOAST NOTIFICATIONS
-    =================================================================== */
-    .toast-container {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      z-index: 3000;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      pointer-events: none;
-    }
+    /* ===== TOAST ===== */
+    .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
     .toast {
-      background: #1f2937;
-      color: #fff;
-      padding: 12px 18px;
-      border-radius: var(--radius-sm);
-      font-size: 14px;
-      box-shadow: var(--shadow-md);
+      background: #1f2937; color: #fff;
+      padding: 12px 18px; border-radius: var(--radius-sm);
+      font-size: 14px; box-shadow: var(--shadow-md);
       animation: toastIn .3s ease, toastOut .3s ease 2.7s forwards;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      display: flex; align-items: center; gap: 8px;
     }
     .toast.success { background: var(--success); }
     .toast.error   { background: var(--danger); }
     @keyframes toastIn  { from { transform: translateX(110%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(30px); } }
 
-    /* ===================================================================
-       RESPONSIVE
-    =================================================================== */
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 640px) {
-      .main          { padding: 16px 16px 60px; }
-      .header        { padding: 0 16px; }
+      .main { padding: 16px 16px 60px; }
+      .header { padding: 0 16px; }
       .header-brand .brand-text { display: none; }
-      .form-grid     { grid-template-columns: 1fr; }
-      .stats-bar     { grid-template-columns: 1fr 1fr; }
-      .product-grid  { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .stats-bar { grid-template-columns: 1fr 1fr; }
+      .product-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-<!-- =========================================================
-     HEADER
-========================================================= -->
+<!-- ===== LOADING BANNER ===== -->
+<div class="loading-banner" id="loadingBanner">⏳ Connecting to database…</div>
+
+<!-- ===== HEADER ===== -->
 <header class="header">
   <div class="header-brand">
     <span class="logo">💎</span>
@@ -521,123 +331,81 @@
   </div>
 </header>
 
-<!-- =========================================================
-     MAIN
-========================================================= -->
+<!-- ===== MAIN ===== -->
 <main class="main">
-
-  <!-- Stats summary -->
-  <div class="stats-bar" id="statsBar"></div>
-
-  <!-- Search + controls toolbar -->
+  <div class="stats-bar"    id="statsBar"></div>
   <div class="toolbar">
     <div class="search-wrapper">
       <span class="search-icon">🔍</span>
-      <input
-        type="text"
-        class="search-input"
-        id="searchInput"
-        placeholder="Search by name, SKU, or notes…"
-        autocomplete="off"
-      />
+      <input type="text" class="search-input" id="searchInput" placeholder="Search by name, SKU, or notes…" autocomplete="off" />
     </div>
   </div>
-
-  <!-- Category filter tabs -->
-  <div class="filters" id="filterTabs"></div>
-
-  <!-- Product cards -->
+  <div class="filters"      id="filterTabs"></div>
   <div class="product-grid" id="productGrid"></div>
-
 </main>
 
-
-<!-- =========================================================
-     ADD / EDIT PRODUCT MODAL
-========================================================= -->
+<!-- ===== ADD / EDIT MODAL ===== -->
 <div class="modal-overlay" id="productModalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-  <div class="modal" id="productModal">
-
+  <div class="modal">
     <div class="modal-header">
       <h2 class="modal-title" id="modalTitle">Add Product</h2>
       <button class="modal-close" id="modalCloseBtn" aria-label="Close">✕</button>
     </div>
-
     <div class="modal-body">
       <form id="productForm" novalidate>
-
-        <!-- Image upload -->
         <div class="form-group" style="margin-bottom:20px;">
           <label>Product Image</label>
           <div class="image-upload-area" id="imageUploadArea" title="Click to upload image">
             <div id="imagePlaceholder">
               <div class="upload-icon">📷</div>
-              <div class="upload-hint">
-                Click to upload image
-                <small>JPG, PNG, GIF, WebP supported</small>
-              </div>
+              <div class="upload-hint">Click to upload image<small>JPG, PNG, GIF, WebP — auto compressed</small></div>
             </div>
             <img id="imagePreview" alt="Product preview" style="display:none;" />
           </div>
           <input type="file" id="imageInput" accept="image/*" tabindex="-1" />
         </div>
-
         <div class="form-grid">
-
           <div class="form-group">
             <label class="required" for="fieldName">Product Name</label>
             <input type="text" id="fieldName" placeholder="e.g. Rose Quartz Bracelet" required />
           </div>
-
           <div class="form-group">
             <label class="required" for="fieldSku">SKU</label>
             <input type="text" id="fieldSku" placeholder="e.g. RQ-001" required />
           </div>
-
           <div class="form-group">
             <label class="required" for="fieldCategory">Category</label>
             <select id="fieldCategory" required>
               <option value="">Select category…</option>
-              <!-- Populated dynamically from CATEGORIES constant -->
             </select>
           </div>
-
           <div class="form-group">
             <label class="required" for="fieldSize">Size</label>
             <input type="text" id="fieldSize" placeholder="e.g. 6mm, S/M/L, One Size" required />
           </div>
-
           <div class="form-group">
             <label class="required" for="fieldQuantity">Quantity</label>
             <input type="number" id="fieldQuantity" min="0" placeholder="0" required />
           </div>
-
           <div class="form-group">
             <label class="required" for="fieldPrice">Selling Price ($)</label>
             <input type="number" id="fieldPrice" min="0" step="0.01" placeholder="0.00" required />
           </div>
-
           <div class="form-group full">
             <label for="fieldNotes">Notes</label>
             <textarea id="fieldNotes" placeholder="Bead type, colour details, supplier info…"></textarea>
           </div>
-
-        </div><!-- /.form-grid -->
+        </div>
       </form>
-    </div><!-- /.modal-body -->
-
+    </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" id="modalCancelBtn">Cancel</button>
       <button class="btn btn-primary"   id="modalSaveBtn">Save Product</button>
     </div>
+  </div>
+</div>
 
-  </div><!-- /.modal -->
-</div><!-- /.modal-overlay -->
-
-
-<!-- =========================================================
-     DELETE CONFIRM DIALOG
-========================================================= -->
+<!-- ===== CONFIRM DIALOG ===== -->
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-dialog">
     <div class="confirm-icon">🗑️</div>
@@ -650,158 +418,115 @@
   </div>
 </div>
 
-
-<!-- =========================================================
-     TOAST CONTAINER
-========================================================= -->
+<!-- ===== TOAST CONTAINER ===== -->
 <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
 
-<!-- =========================================================
-     JAVASCRIPT
-========================================================= -->
-<script>
-'use strict';
+<!-- ===================================================================
+     JAVASCRIPT  (ES Module — required for Firebase SDK)
+=================================================================== -->
+<script type="module">
+
+// ── Firebase SDK (loaded from Google CDN, no build step needed) ──────────
+import { initializeApp }  from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import {
+  getFirestore,
+  collection,
+  doc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  getDocs,
+  onSnapshot,
+} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+
 
 /* ===========================================================
    CONSTANTS
-   Add future categories here — the rest of the app auto-updates.
 =========================================================== */
 const CATEGORIES          = ['Basic', 'Designer', 'Special', 'Braided Bracelet'];
-const LOW_STOCK_THRESHOLD = 3;   // show warning badge below this qty
-const STORAGE_KEY         = 'crystal_inventory_v1';
+const LOW_STOCK_THRESHOLD = 3;
+
+
+/* ===========================================================
+   FIREBASE CONFIG
+=========================================================== */
+const firebaseConfig = {
+  apiKey:            'AIzaSyDgAuhtTuQEdagowFABLVY17H9ANMa42GI',
+  authDomain:        'crystal-inventory-a92a4.firebaseapp.com',
+  projectId:         'crystal-inventory-a92a4',
+  storageBucket:     'crystal-inventory-a92a4.firebasestorage.app',
+  messagingSenderId: '211522872548',
+  appId:             '1:211522872548:web:8706d26ea0986f228638f1',
+};
 
 
 /* ===========================================================
    DATA LAYER  (DB)
    ─────────────────────────────────────────────────────────
    All reads/writes go through this object.
-   The UI layer must NEVER touch localStorage directly.
-   This separation makes it trivial to swap in an API later.
+   Uses Firestore as the backend — changes are instantly
+   reflected for every user viewing the page.
+
+   Read operations are synchronous against an in-memory cache
+   that is kept up-to-date by an onSnapshot listener.
+   Write operations are async (fire-and-forget from UI's POV).
 =========================================================== */
 const DB = (() => {
 
-  let _products = [];   // in-memory cache
+  // ── Firebase setup ──
+  const _app  = initializeApp(firebaseConfig);
+  const _db   = getFirestore(_app);
+  const _col  = collection(_db, 'products');
 
-  /* ── Persistence ── */
-
-  function _load() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      _products = raw ? JSON.parse(raw) : [];
-    } catch (e) {
-      console.error('[DB] load failed:', e);
-      _products = [];
-    }
-  }
-
-  function _save() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(_products));
-    } catch (e) {
-      console.error('[DB] save failed:', e);
-    }
-  }
-
-  /* ── Helpers ── */
-
-  function _uid() {
-    return 'prod_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
-  }
-
-  /* ── Public API ── */
-
-  /** Return a shallow copy of all products */
-  function getAll() { return [..._products]; }
-
-  /** Return a single product by ID, or null */
-  function getById(id) { return _products.find(p => p.id === id) || null; }
+  // ── In-memory cache (populated by onSnapshot) ──
+  let _products  = [];
+  let _unsubscribe = null;
 
   /**
-   * Create a new product.
-   * @param {Object} data  — { name, sku, category, size, quantity, price, notes, image }
-   * @returns {Object}     — the saved product record (with id + timestamps)
+   * Start the real-time Firestore listener.
+   * @param {Function} onChange  called every time data changes
    */
-  function add(data) {
-    const now = new Date().toISOString();
-    const product = {
-      id:        _uid(),
-      name:      data.name,
-      sku:       data.sku,
-      category:  data.category,
-      size:      data.size,
-      quantity:  Number(data.quantity),
-      price:     Number(data.price),
-      notes:     data.notes || '',
-      image:     data.image || '',     // base64 data URL or empty string
-      createdAt: now,
-      updatedAt: now,
-      // ── Stubs for future features ──────────────────────────
-      // status:       'active',         // for status-label feature
-      // stockHistory: [],               // for stock-in/out log
-      // shipments:    [],               // for shipping management
-    };
-    _products.push(product);
-    _save();
-    return product;
+  function startListening(onChange) {
+    _unsubscribe = onSnapshot(
+      _col,
+      snapshot => {
+        _products = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        onChange(_products);
+      },
+      err => console.error('[DB] Firestore error:', err)
+    );
   }
 
-  /**
-   * Update an existing product.
-   * @param {string} id
-   * @param {Object} data  — partial or full field set
-   * @returns {Object|null}
-   */
-  function update(id, data) {
-    const idx = _products.findIndex(p => p.id === id);
-    if (idx === -1) return null;
-    _products[idx] = {
-      ..._products[idx],
-      ...data,
-      quantity:  Number(data.quantity ?? _products[idx].quantity),
-      price:     Number(data.price    ?? _products[idx].price),
-      updatedAt: new Date().toISOString(),
-    };
-    _save();
-    return _products[idx];
+  function stopListening() {
+    if (_unsubscribe) _unsubscribe();
   }
 
-  /**
-   * Delete a product by ID.
-   * @returns {boolean}
-   */
-  function remove(id) {
-    const before = _products.length;
-    _products = _products.filter(p => p.id !== id);
-    if (_products.length < before) { _save(); return true; }
-    return false;
-  }
+  // ── Synchronous reads (against in-memory cache) ──
+  function getAll()     { return [..._products]; }
+  function getById(id)  { return _products.find(p => p.id === id) || null; }
 
   /**
-   * Filtered query — used by the product grid.
-   * @param {Object} opts  — { search: string, category: string }
-   * @returns {Object[]}
+   * Filtered query used by the product grid.
+   * @param {{ search: string, category: string }} opts
    */
   function query({ search = '', category = 'All' } = {}) {
     let result = [..._products];
-
     if (category && category !== 'All') {
       result = result.filter(p => p.category === category);
     }
-
     if (search) {
       const q = search.toLowerCase();
       result = result.filter(p =>
-        p.name.toLowerCase().includes(q) ||
-        p.sku.toLowerCase().includes(q)  ||
+        p.name.toLowerCase().includes(q)  ||
+        p.sku.toLowerCase().includes(q)   ||
         (p.notes && p.notes.toLowerCase().includes(q))
       );
     }
-
     return result;
   }
 
-  /** Aggregate stats shown in the header cards */
+  /** Aggregate stats for the header cards */
   function getStats() {
     return {
       total:      _products.length,
@@ -811,29 +536,113 @@ const DB = (() => {
     };
   }
 
-  _load();   // initialise from localStorage on module creation
+  /** Returns true if the Firestore collection is empty */
+  async function isEmpty() {
+    const snap = await getDocs(_col);
+    return snap.empty;
+  }
 
-  return { getAll, getById, add, update, remove, query, getStats };
+  // ── Async writes (go directly to Firestore) ──
+
+  /**
+   * Add a new product.
+   * @param {Object} data — { name, sku, category, size, quantity, price, notes, image }
+   */
+  async function add(data) {
+    const now = new Date().toISOString();
+    await addDoc(_col, {
+      name:      data.name,
+      sku:       data.sku,
+      category:  data.category,
+      size:      data.size,
+      quantity:  Number(data.quantity),
+      price:     Number(data.price),
+      notes:     data.notes || '',
+      image:     data.image || '',    // compressed base64 or empty
+      createdAt: now,
+      updatedAt: now,
+      // ── Stubs for future features ──
+      // status:       'active',
+      // stockHistory: [],
+      // shipments:    [],
+    });
+  }
+
+  /**
+   * Update an existing product.
+   * @param {string} id
+   * @param {Object} data
+   */
+  async function update(id, data) {
+    const ref = doc(_db, 'products', id);
+    await updateDoc(ref, {
+      name:      data.name,
+      sku:       data.sku,
+      category:  data.category,
+      size:      data.size,
+      quantity:  Number(data.quantity),
+      price:     Number(data.price),
+      notes:     data.notes || '',
+      image:     data.image || '',
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  /**
+   * Delete a product by ID.
+   * @param {string} id
+   */
+  async function remove(id) {
+    await deleteDoc(doc(_db, 'products', id));
+  }
+
+  return { startListening, stopListening, getAll, getById, add, update, remove, query, getStats, isEmpty };
 
 })();
+
+
+/* ===========================================================
+   IMAGE UTILITY
+   ─────────────────────────────────────────────────────────
+   Compresses images to max 600×600px JPEG before storing
+   in Firestore (keeps documents well under the 1 MB limit).
+=========================================================== */
+function compressImage(dataUrl, maxPx = 600, quality = 0.72) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if (w > maxPx || h > maxPx) {
+        if (w >= h) { h = Math.round(h * maxPx / w); w = maxPx; }
+        else        { w = Math.round(w * maxPx / h); h = maxPx; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = dataUrl;
+  });
+}
 
 
 /* ===========================================================
    UI LAYER
    ─────────────────────────────────────────────────────────
    Handles all DOM rendering and user-interaction events.
-   Calls DB for data; never reads/writes localStorage itself.
+   Calls DB for data — never touches Firestore directly.
 =========================================================== */
 const UI = (() => {
 
-  /* ── Internal state ── */
-  let _filter      = 'All';   // currently selected category
-  let _search      = '';      // current search query
-  let _editingId   = null;    // null = add mode; string = edit mode
-  let _deleteId    = null;    // product ID pending confirmation
-  let _imageData   = '';      // base64 of pending image upload
+  // ── Internal state ──
+  let _filter    = 'All';
+  let _search    = '';
+  let _editingId = null;   // null = add mode; string = edit mode
+  let _deleteId  = null;
+  let _imageData = '';     // compressed base64 of pending upload
 
-  /* ── DOM refs ── */
+  // ── DOM refs ──
+  const $loadingBanner   = document.getElementById('loadingBanner');
   const $grid            = document.getElementById('productGrid');
   const $filterTabs      = document.getElementById('filterTabs');
   const $statsBar        = document.getElementById('statsBar');
@@ -854,51 +663,45 @@ const UI = (() => {
   const $confirmCancel   = document.getElementById('confirmCancelBtn');
   const $confirmDelete   = document.getElementById('confirmDeleteBtn');
   const $toasts          = document.getElementById('toastContainer');
+  const $name            = document.getElementById('fieldName');
+  const $sku             = document.getElementById('fieldSku');
+  const $category        = document.getElementById('fieldCategory');
+  const $size            = document.getElementById('fieldSize');
+  const $quantity        = document.getElementById('fieldQuantity');
+  const $price           = document.getElementById('fieldPrice');
+  const $notes           = document.getElementById('fieldNotes');
 
-  /* Form fields */
-  const $name     = document.getElementById('fieldName');
-  const $sku      = document.getElementById('fieldSku');
-  const $category = document.getElementById('fieldCategory');
-  const $size     = document.getElementById('fieldSize');
-  const $quantity = document.getElementById('fieldQuantity');
-  const $price    = document.getElementById('fieldPrice');
-  const $notes    = document.getElementById('fieldNotes');
+  // ── Utilities ──
 
-  /* ── Utility helpers ── */
-
-  function _fmt(v)   { return '$' + Number(v).toFixed(2); }   // currency
-
+  function _fmt(v)    { return '$' + Number(v).toFixed(2); }
   function _date(iso) {
     if (!iso) return '—';
     return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
   }
-
-  /** Minimal HTML escaping to prevent XSS in rendered cards */
   function _esc(s) {
     return String(s ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  /* ── Toast notifications ── */
-
+  // ── Toast ──
   function toast(msg, type = 'success') {
     const el = document.createElement('div');
-    el.className = `toast ${type}`;
+    el.className   = `toast ${type}`;
     el.textContent = (type === 'success' ? '✓  ' : '✕  ') + msg;
     $toasts.appendChild(el);
     setTimeout(() => el.remove(), 3200);
   }
 
-  /* ── Category filter tabs ── */
+  // ── Loading banner ──
+  function hideBanner() { $loadingBanner.classList.add('hidden'); }
 
+  // ── Category filter tabs ──
   function _renderFilters() {
     $filterTabs.innerHTML = '';
     ['All', ...CATEGORIES].forEach(cat => {
       const btn = document.createElement('button');
-      btn.className  = 'filter-tab' + (cat === _filter ? ' active' : '');
+      btn.className   = 'filter-tab' + (cat === _filter ? ' active' : '');
       btn.textContent = cat;
       btn.addEventListener('click', () => {
         _filter = cat;
@@ -909,8 +712,7 @@ const UI = (() => {
     });
   }
 
-  /* ── Stats bar ── */
-
+  // ── Stats bar ──
   function _renderStats() {
     const s = DB.getStats();
     $statsBar.innerHTML = `
@@ -934,8 +736,7 @@ const UI = (() => {
       </div>`;
   }
 
-  /* ── Product grid ── */
-
+  // ── Product grid ──
   function _renderProducts() {
     const items = DB.query({ search: _search, category: _filter });
 
@@ -952,8 +753,6 @@ const UI = (() => {
     }
 
     $grid.innerHTML = items.map(_buildCardHTML).join('');
-
-    /* Wire up card action buttons */
     $grid.querySelectorAll('[data-edit]').forEach(btn =>
       btn.addEventListener('click', () => _openEdit(btn.dataset.edit))
     );
@@ -967,7 +766,6 @@ const UI = (() => {
     const img = p.image
       ? `<img src="${p.image}" alt="${_esc(p.name)}" />`
       : `<div class="card-image-placeholder">💎</div>`;
-
     return `
       <div class="product-card${low ? ' low-stock' : ''}">
         ${low ? '<span class="low-stock-badge">⚠ Low Stock</span>' : ''}
@@ -977,14 +775,8 @@ const UI = (() => {
           <div class="card-name">${_esc(p.name)}</div>
           <div class="card-sku">SKU: ${_esc(p.sku)}</div>
           <div class="card-meta">
-            <div>
-              <div class="meta-label">Qty</div>
-              <div class="meta-value${low ? ' warn' : ''}">${p.quantity}</div>
-            </div>
-            <div>
-              <div class="meta-label">Size</div>
-              <div class="meta-value">${_esc(p.size)}</div>
-            </div>
+            <div><div class="meta-label">Qty</div><div class="meta-value${low ? ' warn' : ''}">${p.quantity}</div></div>
+            <div><div class="meta-label">Size</div><div class="meta-value">${_esc(p.size)}</div></div>
           </div>
           <div class="card-price">${_fmt(p.price)}</div>
           ${p.notes ? `<div class="card-notes" title="${_esc(p.notes)}">${_esc(p.notes)}</div>` : ''}
@@ -997,47 +789,45 @@ const UI = (() => {
       </div>`;
   }
 
-  /* ── Full refresh helper ── */
-
-  function _refresh() {
+  // ── Full re-render (triggered by Firestore onSnapshot) ──
+  function refresh() {
+    hideBanner();
     _renderStats();
     _renderFilters();
     _renderProducts();
   }
 
-  /* ── Modal helpers ── */
-
+  // ── Category select (form) ──
   function _populateCategorySelect() {
     $category.innerHTML = '<option value="">Select category…</option>';
     CATEGORIES.forEach(cat => {
-      const o  = document.createElement('option');
-      o.value  = cat;
-      o.textContent = cat;
+      const o = document.createElement('option');
+      o.value = cat; o.textContent = cat;
       $category.appendChild(o);
     });
   }
 
+  // ── Image preview helpers ──
   function _showImagePreview(src) {
-    $imagePreview.src    = src;
+    $imagePreview.src = src;
     $imagePreview.style.display = 'block';
     $imagePlaceholder.style.display = 'none';
     $imageUploadArea.classList.add('has-image');
   }
-
   function _resetImagePreview() {
-    $imagePreview.src    = '';
+    $imagePreview.src = '';
     $imagePreview.style.display = 'none';
     $imagePlaceholder.style.display = 'block';
     $imageUploadArea.classList.remove('has-image');
     $imageInput.value = '';
   }
 
+  // ── Modal ──
   function _openAdd() {
-    _editingId  = null;
-    _imageData  = '';
+    _editingId = null; _imageData = '';
     $productForm.reset();
     _resetImagePreview();
-    $modalTitle.textContent  = 'Add Product';
+    $modalTitle.textContent   = 'Add Product';
     $modalSaveBtn.textContent = 'Save Product';
     $modalOverlay.classList.add('open');
     requestAnimationFrame(() => $name.focus());
@@ -1046,9 +836,7 @@ const UI = (() => {
   function _openEdit(id) {
     const p = DB.getById(id);
     if (!p) return;
-    _editingId = id;
-    _imageData = p.image || '';
-
+    _editingId = id; _imageData = p.image || '';
     $name.value     = p.name;
     $sku.value      = p.sku;
     $category.value = p.category;
@@ -1056,10 +844,8 @@ const UI = (() => {
     $quantity.value = p.quantity;
     $price.value    = p.price;
     $notes.value    = p.notes;
-
     p.image ? _showImagePreview(p.image) : _resetImagePreview();
-
-    $modalTitle.textContent  = 'Edit Product';
+    $modalTitle.textContent   = 'Edit Product';
     $modalSaveBtn.textContent = 'Update Product';
     $modalOverlay.classList.add('open');
     requestAnimationFrame(() => $name.focus());
@@ -1067,16 +853,15 @@ const UI = (() => {
 
   function _closeModal() {
     $modalOverlay.classList.remove('open');
-    _editingId = null;
-    _imageData = '';
+    _editingId = null; _imageData = '';
   }
 
-  function _handleSave() {
-    /* Basic HTML5 validation */
-    if (!$productForm.checkValidity()) {
-      $productForm.reportValidity();
-      return;
-    }
+  // ── Save (async — writes to Firestore) ──
+  async function _handleSave() {
+    if (!$productForm.checkValidity()) { $productForm.reportValidity(); return; }
+
+    $modalSaveBtn.disabled = true;
+    $modalSaveBtn.textContent = 'Saving…';
 
     const data = {
       name:     $name.value.trim(),
@@ -1089,20 +874,26 @@ const UI = (() => {
       image:    _imageData,
     };
 
-    if (_editingId) {
-      DB.update(_editingId, data);
-      toast('Product updated.');
-    } else {
-      DB.add(data);
-      toast('Product added.');
+    try {
+      if (_editingId) {
+        await DB.update(_editingId, data);
+        toast('Product updated.');
+      } else {
+        await DB.add(data);
+        toast('Product added.');
+      }
+      _closeModal();
+      // No manual refresh needed — onSnapshot fires automatically
+    } catch (err) {
+      console.error('[UI] save failed:', err);
+      toast('Save failed. Please try again.', 'error');
+    } finally {
+      $modalSaveBtn.disabled = false;
+      $modalSaveBtn.textContent = _editingId ? 'Update Product' : 'Save Product';
     }
-
-    _closeModal();
-    _refresh();
   }
 
-  /* ── Confirm dialog ── */
-
+  // ── Confirm delete ──
   function _openConfirm(id) {
     _deleteId = id;
     const p = DB.getById(id);
@@ -1111,176 +902,103 @@ const UI = (() => {
       : 'Are you sure? This cannot be undone.';
     $confirmOverlay.classList.add('open');
   }
-
   function _closeConfirm() {
     $confirmOverlay.classList.remove('open');
     _deleteId = null;
   }
 
-  function _handleDelete() {
+  async function _handleDelete() {
     if (!_deleteId) return;
-    DB.remove(_deleteId);
-    toast('Product deleted.');
-    _closeConfirm();
-    _refresh();
+    $confirmDelete.disabled = true;
+    try {
+      await DB.remove(_deleteId);
+      toast('Product deleted.');
+      _closeConfirm();
+    } catch (err) {
+      console.error('[UI] delete failed:', err);
+      toast('Delete failed. Please try again.', 'error');
+      $confirmDelete.disabled = false;
+    }
   }
 
-  /* ── Event wiring ── */
-
+  // ── Event wiring ──
   function init() {
     _populateCategorySelect();
 
-    /* Header */
     $addProductBtn.addEventListener('click', _openAdd);
-
-    /* Modal */
     $modalCloseBtn.addEventListener('click',  _closeModal);
     $modalCancelBtn.addEventListener('click', _closeModal);
     $modalSaveBtn.addEventListener('click',   _handleSave);
-    $modalOverlay.addEventListener('click', e => { if (e.target === $modalOverlay) _closeModal(); });
+    $modalOverlay.addEventListener('click',   e => { if (e.target === $modalOverlay) _closeModal(); });
 
-    /* Confirm dialog */
     $confirmCancel.addEventListener('click',  _closeConfirm);
     $confirmDelete.addEventListener('click',  _handleDelete);
     $confirmOverlay.addEventListener('click', e => { if (e.target === $confirmOverlay) _closeConfirm(); });
 
-    /* Keyboard: Escape closes modals */
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') { _closeModal(); _closeConfirm(); }
     });
 
-    /* Search — debounce with requestAnimationFrame for snappy UX */
-    let _searchFrame;
+    // Search with rAF debounce
+    let _frame;
     $searchInput.addEventListener('input', e => {
-      cancelAnimationFrame(_searchFrame);
-      _searchFrame = requestAnimationFrame(() => {
+      cancelAnimationFrame(_frame);
+      _frame = requestAnimationFrame(() => {
         _search = e.target.value.trim();
         _renderProducts();
       });
     });
 
-    /* Image upload */
+    // Image upload + compress
     $imageUploadArea.addEventListener('click', () => $imageInput.click());
-    $imageInput.addEventListener('change', e => {
+    $imageInput.addEventListener('change', async e => {
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = ev => {
-        _imageData = ev.target.result;
+      reader.onload = async ev => {
+        _imageData = await compressImage(ev.target.result);
         _showImagePreview(_imageData);
       };
       reader.readAsDataURL(file);
     });
-
-    /* Initial render */
-    _refresh();
   }
 
-  return { init };
+  return { init, refresh };
 
 })();
 
 
 /* ===========================================================
-   SAMPLE DATA
-   Only seeded when localStorage is empty — won't overwrite
-   real data on subsequent visits.
+   SAMPLE DATA  —  seeded once if Firestore is empty
 =========================================================== */
-function seedSampleData() {
-  if (DB.getAll().length > 0) return;   // skip if data already exists
-
-  [
-    {
-      name: 'Rose Quartz Stretch Bracelet',
-      sku: 'RQ-001',
-      category: 'Basic',
-      size: '6mm',
-      quantity: 12,
-      price: 18.00,
-      notes: 'Soft pink beads. Popular everyday seller.',
-      image: '',
-    },
-    {
-      name: 'Amethyst Premium Bracelet',
-      sku: 'AM-D001',
-      category: 'Designer',
-      size: '8mm',
-      quantity: 5,
-      price: 45.00,
-      notes: 'Deep purple amethyst with silver accent charm.',
-      image: '',
-    },
-    {
-      name: 'Tiger Eye Power Bracelet',
-      sku: 'TE-S001',
-      category: 'Special',
-      size: '10mm',
-      quantity: 2,
-      price: 65.00,
-      notes: 'Limited edition. Gold-brown tiger eye stones.',
-      image: '',
-    },
-    {
-      name: 'Lapis Lazuli Braided',
-      sku: 'LL-BB001',
-      category: 'Braided Bracelet',
-      size: 'One Size',
-      quantity: 8,
-      price: 35.00,
-      notes: 'Blue lapis chips woven with gold thread.',
-      image: '',
-    },
-    {
-      name: 'Clear Quartz Clarity Bracelet',
-      sku: 'CQ-002',
-      category: 'Basic',
-      size: '6mm',
-      quantity: 1,
-      price: 15.00,
-      notes: 'Crystal clear quartz. Good for focus and clarity.',
-      image: '',
-    },
-    {
-      name: 'Black Obsidian Protection',
-      sku: 'BO-S002',
-      category: 'Special',
-      size: '8mm',
-      quantity: 4,
-      price: 55.00,
-      notes: 'Matte black obsidian. Grounding & protection stone.',
-      image: '',
-    },
-    {
-      name: 'Citrine Braided Wrap',
-      sku: 'CT-BB002',
-      category: 'Braided Bracelet',
-      size: 'Adjustable',
-      quantity: 6,
-      price: 40.00,
-      notes: 'Sunny yellow citrine chips with tan leather braid.',
-      image: '',
-    },
-    {
-      name: 'Turquoise Designer Cuff',
-      sku: 'TQ-D002',
-      category: 'Designer',
-      size: 'S/M',
-      quantity: 3,
-      price: 78.00,
-      notes: 'Genuine turquoise stones in a sterling silver setting.',
-      image: '',
-    },
-  ].forEach(p => DB.add(p));
+async function seedSampleData() {
+  const samples = [
+    { name: 'Rose Quartz Stretch Bracelet', sku: 'RQ-001',   category: 'Basic',            size: '6mm',       quantity: 12, price: 18.00, notes: 'Soft pink beads. Popular everyday seller.',               image: '' },
+    { name: 'Amethyst Premium Bracelet',    sku: 'AM-D001',  category: 'Designer',          size: '8mm',       quantity: 5,  price: 45.00, notes: 'Deep purple amethyst with silver accent charm.',           image: '' },
+    { name: 'Tiger Eye Power Bracelet',     sku: 'TE-S001',  category: 'Special',           size: '10mm',      quantity: 2,  price: 65.00, notes: 'Limited edition. Gold-brown tiger eye stones.',            image: '' },
+    { name: 'Lapis Lazuli Braided',         sku: 'LL-BB001', category: 'Braided Bracelet',  size: 'One Size',  quantity: 8,  price: 35.00, notes: 'Blue lapis chips woven with gold thread.',                 image: '' },
+    { name: 'Clear Quartz Clarity Bracelet',sku: 'CQ-002',   category: 'Basic',             size: '6mm',       quantity: 1,  price: 15.00, notes: 'Crystal clear quartz. Good for focus and clarity.',        image: '' },
+    { name: 'Black Obsidian Protection',    sku: 'BO-S002',  category: 'Special',           size: '8mm',       quantity: 4,  price: 55.00, notes: 'Matte black obsidian. Grounding & protection stone.',      image: '' },
+    { name: 'Citrine Braided Wrap',         sku: 'CT-BB002', category: 'Braided Bracelet',  size: 'Adjustable',quantity: 6,  price: 40.00, notes: 'Sunny yellow citrine chips with tan leather braid.',        image: '' },
+    { name: 'Turquoise Designer Cuff',      sku: 'TQ-D002',  category: 'Designer',          size: 'S/M',       quantity: 3,  price: 78.00, notes: 'Genuine turquoise stones in a sterling silver setting.',   image: '' },
+  ];
+  for (const p of samples) await DB.add(p);
 }
 
 
 /* ===========================================================
    BOOTSTRAP
 =========================================================== */
-document.addEventListener('DOMContentLoaded', () => {
-  seedSampleData();
-  UI.init();
-});
+UI.init();
+
+// Seed only if Firestore is empty, then start real-time listener
+(async () => {
+  if (await DB.isEmpty()) await seedSampleData();
+  // onSnapshot keeps UI in sync with every Firestore change —
+  // including changes made by your partner on their device.
+  DB.startListening(() => UI.refresh());
+})();
+
 </script>
 </body>
 </html>
