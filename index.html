@@ -754,10 +754,17 @@ const DB = (() => {
 
   async function update(id, data) {
     await updateDoc(doc(_db, 'products', id), {
-      name: data.name, sku: data.sku, category: data.category,
-      size: data.size, quantity: Number(data.quantity), price: Number(data.price),
-      notes: data.notes || '', image: data.image || '',
-      updatedAt: new Date().toISOString(),
+      name:         data.name,
+      sku:          data.sku,
+      category:     data.category,
+      size:         data.size,
+      quantity:     Number(data.quantity),
+      price:        Number(data.price),
+      notes:        data.notes || '',
+      image:        data.image || '',
+      soldRevenue:  Number(data.soldRevenue || 0),
+      soldAt:       data.soldAt || null,
+      updatedAt:    new Date().toISOString(),
     });
   }
 
