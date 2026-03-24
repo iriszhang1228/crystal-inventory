@@ -179,25 +179,31 @@
       flex-wrap: wrap;
       margin-bottom: 12px;
     }
-    .search-wrapper { position: relative; flex: 1; min-width: 200px; }
-    .search-icon {
-      position: absolute; left: 11px; top: 50%;
-      transform: translateY(-50%);
-      color: var(--fg-muted); pointer-events: none;
-      line-height: 0;
-    }
-    .search-icon svg { width: 14px; height: 14px; display: block; }
-    .search-input {
-      width: 100%; height: 34px;
-      padding: 0 12px 0 34px;
+    .search-wrapper {
+      flex: 1; min-width: 200px;
+      display: flex; align-items: center;
+      height: 34px;
+      padding: 0 10px;
+      gap: 8px;
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      font-size: 13px; font-family: inherit;
-      background: var(--surface); color: var(--fg);
+      background: var(--surface);
       transition: border-color .15s, box-shadow .15s;
     }
+    .search-wrapper:focus-within {
+      border-color: var(--fg);
+      box-shadow: 0 0 0 2px rgba(9,9,11,.06);
+    }
+    .search-icon { display: flex; align-items: center; color: var(--fg-muted); flex-shrink: 0; }
+    .search-icon svg { width: 14px; height: 14px; display: block; }
+    .search-input {
+      flex: 1; height: 100%;
+      border: none; outline: none;
+      background: transparent;
+      font-size: 13px; font-family: inherit;
+      color: var(--fg); padding: 0;
+    }
     .search-input::placeholder { color: var(--fg-muted); }
-    .search-input:focus { outline: none; border-color: var(--fg); box-shadow: 0 0 0 2px rgba(9,9,11,.06); }
 
     /* ===================================================================
        FILTER TABS
