@@ -233,17 +233,22 @@
       flex-direction: column;
     }
     .product-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
-    .product-card.low-stock { border-color: var(--warning-border); }
+    .product-card.low-stock   { border-color: var(--warning-border); }
+    .product-card.out-of-stock { border-color: #fca5a5; opacity: .75; }
 
-    .low-stock-indicator {
+    .low-stock-indicator,
+    .out-of-stock-indicator {
       position: absolute; top: 10px; right: 10px;
-      background: var(--warning-bg);
-      color: var(--warning-fg);
-      border: 1px solid var(--warning-border);
       font-size: 10px; font-weight: 600;
       padding: 2px 8px; border-radius: 20px;
-      letter-spacing: .02em;
+      border: 1px solid; letter-spacing: .02em;
     }
+    .low-stock-indicator   { background: var(--warning-bg); color: var(--warning-fg); border-color: var(--warning-border); }
+    .out-of-stock-indicator { background: #fef2f2; color: #991b1b; border-color: #fca5a5; }
+
+    .card-actions { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--border); padding-top: 12px; }
+    .card-actions-row { display: flex; gap: 6px; }
+    .card-actions-row .btn { flex: 1; }
 
     .card-image-wrap {
       width: 100%; height: 180px;
@@ -299,8 +304,6 @@
       border-top: 1px solid var(--border);
       padding-top: 12px;
     }
-    .card-actions .btn { flex: 1; }
-
     /* ===================================================================
        EMPTY STATE
     =================================================================== */
@@ -620,6 +623,23 @@
 </div>
 
 
+<!-- MARK AS SOLD DIALOG -->
+<div class="confirm-overlay" id="sellOverlay">
+  <div class="confirm-dialog">
+    <div class="confirm-title">Mark as Sold</div>
+    <div class="confirm-message" id="sellMessage">How many units were sold?</div>
+    <div style="margin-bottom:20px;">
+      <label style="font-size:12px;font-weight:500;display:block;margin-bottom:5px;">Units Sold</label>
+      <input type="number" id="sellQtyInput" min="1" value="1" style="width:100%;" />
+      <div id="sellStockHint" style="font-size:11px;color:var(--fg-muted);margin-top:4px;"></div>
+    </div>
+    <div class="confirm-actions">
+      <button class="btn btn-secondary" id="sellCancelBtn">Cancel</button>
+      <button class="btn btn-primary"   id="sellConfirmBtn">Confirm Sale</button>
+    </div>
+  </div>
+</div>
+
 <!-- CONFIRM DIALOG -->
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-dialog">
@@ -800,6 +820,13 @@ const UI = (() => {
   const $imgPh     = document.getElementById('imagePlaceholder');
   const $imgPrev   = document.getElementById('imagePreview');
   const $imgInput  = document.getElementById('imageInput');
+  const $sellOv    = document.getElementById('sellOverlay');
+  const $sellMsg   = document.getElementById('sellMessage');
+  const $sellQty   = document.getElementById('sellQtyInput');
+  const $sellHint  = document.getElementById('sellStockHint');
+  const $sellCanc  = document.getElementById('sellCancelBtn');
+  const $sellConf  = document.getElementById('sellConfirmBtn');
+  let   _sellId    = null;
   const $confOv    = document.getElementById('confirmOverlay');
   const $confMsg   = document.getElementById('confirmMessage');
   const $confCanc  = document.getElementById('confirmCancelBtn');
@@ -887,9 +914,11 @@ const UI = (() => {
         ? `<img src="${p.image}" alt="${_esc(p.name)}" />`
         : `<div class="card-img-placeholder">${ICONS.image}<span>No image</span></div>`;
 
+      const oos = p.quantity === 0;
       return `
-        <div class="product-card${low ? ' low-stock' : ''}">
-          ${low ? '<span class="low-stock-indicator">Low Stock</span>' : ''}
+        <div class="product-card${oos ? ' out-of-stock' : (low ? ' low-stock' : '')}">
+          ${oos ? '<span class="out-of-stock-indicator">Out of Stock</span>'
+                : low ? '<span class="low-stock-indicator">Low Stock</span>' : ''}
           <div class="card-image-wrap">${img}</div>
           <div class="card-body">
             <div class="card-meta-top">
@@ -900,7 +929,7 @@ const UI = (() => {
             <div class="card-stats">
               <div>
                 <div class="stat-item-label">Qty</div>
-                <div class="stat-item-value${low ? ' warn' : ''}">${p.quantity}</div>
+                <div class="stat-item-value${oos ? ' warn' : (low ? ' warn' : '')}">${p.quantity}</div>
               </div>
               <div>
                 <div class="stat-item-label">Size</div>
@@ -911,8 +940,11 @@ const UI = (() => {
             ${p.notes ? `<div class="card-notes" title="${_esc(p.notes)}">${_esc(p.notes)}</div>` : ''}
             <div class="card-updated">Updated ${_date(p.updatedAt)}</div>
             <div class="card-actions">
-              <button class="btn btn-secondary btn-sm" data-edit="${p.id}">${ICONS.edit} Edit</button>
-              <button class="btn btn-ghost btn-sm"     data-delete="${p.id}">${ICONS.trash} Delete</button>
+              <button class="btn btn-primary btn-sm" data-sell="${p.id}" ${oos ? 'disabled' : ''}>${ICONS.check} Mark as Sold</button>
+              <div class="card-actions-row">
+                <button class="btn btn-secondary btn-sm" data-edit="${p.id}">${ICONS.edit} Edit</button>
+                <button class="btn btn-ghost btn-sm"     data-delete="${p.id}">${ICONS.trash} Delete</button>
+              </div>
             </div>
           </div>
         </div>`;
@@ -923,6 +955,9 @@ const UI = (() => {
     );
     $grid.querySelectorAll('[data-delete]').forEach(b =>
       b.addEventListener('click', () => _openConfirm(b.dataset.delete))
+    );
+    $grid.querySelectorAll('[data-sell]').forEach(b =>
+      b.addEventListener('click', () => _openSell(b.dataset.sell))
     );
   }
 
@@ -1005,6 +1040,38 @@ const UI = (() => {
     }
   }
 
+  /* Mark as Sold dialog */
+  function _openSell(id) {
+    const p = DB.getById(id); if (!p) return;
+    _sellId = id;
+    $sellMsg.textContent  = `"${p.name}"`;
+    $sellHint.textContent = `${p.quantity} unit${p.quantity !== 1 ? 's' : ''} in stock`;
+    $sellQty.value = 1;
+    $sellQty.max   = p.quantity;
+    $sellOv.classList.add('open');
+    requestAnimationFrame(() => $sellQty.select());
+  }
+  function _closeSell() {
+    $sellOv.classList.remove('open');
+    _sellId = null;
+    $sellConf.disabled = false;
+  }
+  async function _handleSell() {
+    if (!_sellId) return;
+    const p    = DB.getById(_sellId);
+    const qty  = parseInt($sellQty.value, 10);
+    if (!p || isNaN(qty) || qty < 1) { toast('Enter a valid quantity.', 'error'); return; }
+    if (qty > p.quantity) { toast(`Only ${p.quantity} unit${p.quantity !== 1 ? 's' : ''} available.`, 'error'); return; }
+    $sellConf.disabled = true;
+    try {
+      await DB.update(_sellId, { ...p, quantity: p.quantity - qty });
+      toast(`${qty} unit${qty !== 1 ? 's' : ''} marked as sold.`);
+      _closeSell();
+    } catch (e) {
+      console.error(e); toast('Failed. Try again.', 'error'); $sellConf.disabled = false;
+    }
+  }
+
   /* Confirm dialog */
   function _openConfirm(id) {
     _deleteId = id;
@@ -1036,12 +1103,16 @@ const UI = (() => {
     $mSave.addEventListener('click',   _handleSave);
     $overlay.addEventListener('click', e => { if (e.target === $overlay) _closeModal(); });
 
+    $sellCanc.addEventListener('click',  _closeSell);
+    $sellConf.addEventListener('click',  _handleSell);
+    $sellOv.addEventListener('click', e => { if (e.target === $sellOv) _closeSell(); });
+
     $confCanc.addEventListener('click',  _closeConfirm);
     $confDel.addEventListener('click',   _handleDelete);
     $confOv.addEventListener('click', e => { if (e.target === $confOv) _closeConfirm(); });
 
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') { _closeModal(); _closeConfirm(); }
+      if (e.key === 'Escape') { _closeModal(); _closeConfirm(); _closeSell(); }
     });
 
     let _f;
