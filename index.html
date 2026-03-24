@@ -189,7 +189,7 @@
     .search-icon svg { width: 13px; height: 13px; }
     .search-input {
       width: 100%; height: 34px;
-      padding: 0 12px 0 30px;
+      padding: 0 12px 0 36px;
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       font-size: 13px; font-family: inherit;
@@ -274,13 +274,16 @@
       margin-bottom: 8px;
     }
     .card-category {
-      font-size: 10px; font-weight: 500;
-      color: var(--fg-muted);
-      background: var(--muted);
-      border: 1px solid var(--border);
-      padding: 2px 7px; border-radius: 4px;
+      font-size: 10px; font-weight: 600;
+      padding: 2px 8px; border-radius: 4px;
+      border: 1px solid transparent;
       letter-spacing: .02em;
     }
+    /* Per-category colours */
+    .cat-basic    { background: #f4f4f5; color: #52525b; border-color: #d4d4d8; }
+    .cat-designer { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .cat-special  { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+    .cat-braided  { background: #faf5ff; color: #7e22ce; border-color: #e9d5ff; }
 
     .card-name { font-size: 14px; font-weight: 600; letter-spacing: -.01em; margin-bottom: 2px; line-height: 1.3; }
     .card-sku  {
@@ -820,6 +823,7 @@ const UI = (() => {
   const $fNotes    = document.getElementById('fieldNotes');
 
   /* Helpers */
+  const _catClass = cat => ({ 'Basic': 'cat-basic', 'Designer': 'cat-designer', 'Special': 'cat-special', 'Braided Bracelet': 'cat-braided' }[cat] || 'cat-basic');
   const _fmt  = v   => '$' + Number(v).toFixed(2);
   const _date = iso => iso
     ? new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
@@ -898,7 +902,7 @@ const UI = (() => {
           <div class="card-image-wrap">${img}</div>
           <div class="card-body">
             <div class="card-meta-top">
-              <span class="card-category">${_esc(p.category)}</span>
+              <span class="card-category ${_catClass(p.category)}">${_esc(p.category)}</span>
             </div>
             <div class="card-name">${_esc(p.name)}</div>
             <div class="card-sku">${_esc(p.sku)}</div>
@@ -1019,7 +1023,7 @@ const UI = (() => {
       : 'This product will be permanently deleted.';
     $confOv.classList.add('open');
   }
-  function _closeConfirm() { $confOv.classList.remove('open'); _deleteId = null; }
+  function _closeConfirm() { $confOv.classList.remove('open'); _deleteId = null; $confDel.disabled = false; }
 
   async function _handleDelete() {
     if (!_deleteId) return;
