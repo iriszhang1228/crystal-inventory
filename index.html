@@ -940,11 +940,11 @@ const UI = (() => {
             ${p.notes ? `<div class="card-notes" title="${_esc(p.notes)}">${_esc(p.notes)}</div>` : ''}
             <div class="card-updated">Updated ${_date(p.updatedAt)}</div>
             <div class="card-actions">
-              <button class="btn btn-primary btn-sm" data-sell="${p.id}" ${oos ? 'disabled' : ''}>${ICONS.check} Mark as Sold</button>
               <div class="card-actions-row">
                 <button class="btn btn-secondary btn-sm" data-edit="${p.id}">${ICONS.edit} Edit</button>
                 <button class="btn btn-ghost btn-sm"     data-delete="${p.id}">${ICONS.trash} Delete</button>
               </div>
+              <button class="btn btn-primary btn-sm" data-sell="${p.id}" ${oos ? 'disabled' : ''}>${ICONS.check} Mark as Sold</button>
             </div>
           </div>
         </div>`;
