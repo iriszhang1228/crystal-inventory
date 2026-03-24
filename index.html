@@ -948,6 +948,7 @@ const UI = (() => {
           <div class="card-body">
             <div class="card-meta-top">
               <span class="card-category ${_catClass(p.category)}">${_esc(p.category)}</span>
+              <span class="card-date">${_dateShort(p.createdAt)}</span>
             </div>
             <div class="card-name">${_esc(p.name)}</div>
             <div class="card-sku">${_esc(p.sku)}</div>
@@ -963,7 +964,6 @@ const UI = (() => {
             </div>
             <div class="card-price">${_fmt(p.price)}</div>
             ${p.notes ? `<div class="card-notes" title="${_esc(p.notes)}">${_esc(p.notes)}</div>` : ''}
-            <div class="card-date">Created on ${_dateShort(p.createdAt)}</div>
             ${sold && p.soldAt ? `<div class="card-date">Sold on ${_dateShort(p.soldAt)}</div>` : ''}
             <div class="card-actions">
               <div class="card-actions-row">
