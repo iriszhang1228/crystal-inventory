@@ -718,14 +718,12 @@ const DB = (() => {
         (p.notes && p.notes.toLowerCase().includes(q))
       );
     }
-    // Available items first, then sold items ordered by soldAt ascending
-    // (earliest sold appears furthest back)
+    // Available items first, then sold items — within each group sort by SKU
     r.sort((a, b) => {
       const aSold = a.quantity === 0, bSold = b.quantity === 0;
       if (!aSold && bSold)  return -1;
       if (aSold  && !bSold) return  1;
-      if (aSold  && bSold)  return new Date(a.soldAt || 0) - new Date(b.soldAt || 0);
-      return 0;
+      return a.sku.localeCompare(b.sku, undefined, { numeric: true, sensitivity: 'base' });
     });
     return r;
   }
