@@ -1058,6 +1058,13 @@ const UI = (() => {
       quantity: $fQty.value, price: $fPrice.value,
       notes: $fNotes.value.trim(), image: _imageData,
     };
+    if (_editingId) {
+      const existing = DB.getById(_editingId);
+      if (existing) {
+        data.soldRevenue = existing.soldRevenue || 0;
+        data.soldAt      = existing.soldAt      || null;
+      }
+    }
     try {
       if (_editingId) { await DB.update(_editingId, data); toast('Product updated.'); }
       else            { await DB.add(data);                toast('Product added.'); }
