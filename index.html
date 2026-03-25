@@ -948,7 +948,7 @@ const UI = (() => {
           <div class="card-body">
             <div class="card-meta-top">
               <span class="card-category ${_catClass(p.category)}">${_esc(p.category)}</span>
-              <span class="card-date">${sold && p.soldAt ? 'Sold on ' + _dateShort(p.soldAt) : _dateShort(p.createdAt)}</span>
+              <span class="card-date">${sold ? 'Sold on ' + _dateShort(p.soldAt || p.createdAt) : _dateShort(p.createdAt)}</span>
             </div>
             <div class="card-name">${_esc(p.name)}</div>
             <div class="card-sku">${_esc(p.sku)}</div>
