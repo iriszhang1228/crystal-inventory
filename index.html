@@ -781,7 +781,8 @@ const DB = (() => {
 
   function query({ search = '', category = 'All' } = {}) {
     let r = [..._products];
-    if (category !== 'All') r = r.filter(p => p.category === category);
+    if (category === 'Sold')       r = r.filter(p => p.quantity === 0);
+    else if (category !== 'All')   r = r.filter(p => p.category === category);
     if (search) {
       const q = search.toLowerCase();
       r = r.filter(p =>
@@ -996,6 +997,13 @@ const UI = (() => {
       b.addEventListener('click', () => { _viewMode = 'inventory'; _filter = cat; _renderFilters(); _renderProducts(); });
       $filters.appendChild(b);
     });
+    const soldCount = DB.query({ category: 'Sold' }).length;
+    const sold = document.createElement('button');
+    sold.className   = 'filter-tab' + (_viewMode === 'inventory' && _filter === 'Sold' ? ' active' : '');
+    sold.textContent = `Sold (${soldCount})`;
+    sold.addEventListener('click', () => { _viewMode = 'inventory'; _filter = 'Sold'; _renderFilters(); _renderProducts(); });
+    $filters.appendChild(sold);
+
     const del = document.createElement('button');
     del.className   = 'filter-tab deleted-tab' + (_viewMode === 'deleted' ? ' active' : '');
     del.textContent = `Deleted (${DB.getDeleted().length})`;
