@@ -503,9 +503,69 @@
       .stats-bar { grid-template-columns: 1fr 1fr; }
       .product-grid { grid-template-columns: 1fr; }
     }
+    /* ===================================================================
+       PASSWORD GATE
+    =================================================================== */
+    .pw-gate {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pw-gate.hidden { display: none; }
+    .pw-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      padding: 32px 28px;
+      width: 100%; max-width: 360px;
+      text-align: center;
+    }
+    .pw-brand {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; font-size: 15px; font-weight: 700;
+      letter-spacing: -.02em; margin-bottom: 6px;
+    }
+    .pw-brand svg { width: 16px; height: 16px; }
+    .pw-sub { font-size: 12px; color: var(--fg-muted); margin-bottom: 24px; }
+    .pw-input {
+      width: 100%; height: 38px; padding: 0 12px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-size: 14px; font-family: inherit;
+      background: var(--surface); color: var(--fg);
+      text-align: center; letter-spacing: .1em;
+      transition: border-color .15s, box-shadow .15s;
+      margin-bottom: 12px;
+    }
+    .pw-input:focus { outline: none; border-color: var(--fg); box-shadow: 0 0 0 2px rgba(9,9,11,.06); }
+    .pw-input.error { border-color: var(--destructive); }
+    .pw-error { font-size: 12px; color: var(--destructive); min-height: 16px; margin-bottom: 12px; }
+    .pw-btn { width: 100%; }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%,60%  { transform: translateX(-6px); }
+      40%,80%  { transform: translateX(6px); }
+    }
+    .pw-input.shake { animation: shake .35s ease; }
   </style>
 </head>
 <body>
+
+<!-- PASSWORD GATE -->
+<div class="pw-gate" id="pwGate">
+  <div class="pw-box">
+    <div class="pw-brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m6 3 6 7L6 21M18 3l-6 7 6 11M3 9h18"/>
+      </svg>
+      Dazzo Studio Inventory
+    </div>
+    <div class="pw-sub">Enter password to continue</div>
+    <input class="pw-input" id="pwInput" type="password" placeholder="••••••••••" autocomplete="current-password" />
+    <div class="pw-error" id="pwError"></div>
+    <button class="btn btn-primary pw-btn" id="pwBtn">Enter</button>
+  </div>
+</div>
 
 <!-- LOADING BANNER -->
 <div class="loading-banner" id="loadingBanner">
@@ -1329,14 +1389,47 @@ async function seedSampleData() {
 
 
 /* ===========================================================
+   PASSWORD GATE
+=========================================================== */
+const PASSWORD = 'dazzoiscool';
+
+(function () {
+  const $gate  = document.getElementById('pwGate');
+  const $input = document.getElementById('pwInput');
+  const $btn   = document.getElementById('pwBtn');
+  const $err   = document.getElementById('pwError');
+
+  function unlock() { $gate.classList.add('hidden'); boot(); }
+
+  function attempt() {
+    if ($input.value === PASSWORD) {
+      sessionStorage.setItem('dazzo_auth', '1');
+      unlock();
+    } else {
+      $err.textContent = 'Incorrect password. Try again.';
+      $input.classList.add('error', 'shake');
+      $input.value = '';
+      setTimeout(() => $input.classList.remove('shake'), 400);
+    }
+  }
+
+  if (sessionStorage.getItem('dazzo_auth') === '1') { unlock(); return; }
+
+  $btn.addEventListener('click', attempt);
+  $input.addEventListener('keydown', e => { if (e.key === 'Enter') attempt(); });
+  requestAnimationFrame(() => $input.focus());
+})();
+
+/* ===========================================================
    BOOTSTRAP
 =========================================================== */
-UI.init();
-
-(async () => {
-  if (await DB.isEmpty()) await seedSampleData();
-  DB.startListening(() => UI.refresh());
-})();
+function boot() {
+  UI.init();
+  (async () => {
+    if (await DB.isEmpty()) await seedSampleData();
+    DB.startListening(() => UI.refresh());
+  })();
+}
 
 </script>
 </body>
