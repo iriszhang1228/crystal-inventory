@@ -208,6 +208,11 @@
     }
     .filter-tab:hover { border-color: var(--fg); color: var(--fg); }
     .filter-tab.active { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
+    .filter-tab.deleted-tab { color: var(--destructive); border-color: #fecaca; }
+    .filter-tab.deleted-tab:hover { border-color: var(--destructive); color: var(--destructive); }
+    .filter-tab.deleted-tab.active { background: var(--destructive); color: #fff; border-color: var(--destructive); }
+
+    .product-card.deleted-card { opacity: .75; border-style: dashed; }
 
     /* ===================================================================
        PRODUCT GRID
@@ -694,18 +699,25 @@ const DB = (() => {
   const _app = initializeApp(firebaseConfig);
   const _db  = getFirestore(_app);
   const _col = collection(_db, 'products');
-  let _products  = [];
+  let _products        = [];
+  let _deletedProducts = [];
   let _unsubscribe = null;
 
   function startListening(onChange) {
     _unsubscribe = onSnapshot(_col,
-      snap => { _products = snap.docs.map(d => ({ id: d.id, ...d.data() })); onChange(_products); },
+      snap => {
+        const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        _products        = all.filter(p => !p.deletedAt);
+        _deletedProducts = all.filter(p =>  !!p.deletedAt);
+        onChange();
+      },
       err  => console.error('[DB]', err)
     );
   }
 
-  function getAll()    { return [..._products]; }
-  function getById(id) { return _products.find(p => p.id === id) || null; }
+  function getAll()      { return [..._products]; }
+  function getDeleted()  { return [..._deletedProducts]; }
+  function getById(id)   { return [..._products, ..._deletedProducts].find(p => p.id === id) || null; }
 
   function query({ search = '', category = 'All' } = {}) {
     let r = [..._products];
@@ -767,9 +779,15 @@ const DB = (() => {
     });
   }
 
-  async function remove(id) { await deleteDoc(doc(_db, 'products', id)); }
+  async function softDelete(id) {
+    await updateDoc(doc(_db, 'products', id), { deletedAt: new Date().toISOString() });
+  }
+  async function restore(id) {
+    await updateDoc(doc(_db, 'products', id), { deletedAt: null });
+  }
+  async function permanentDelete(id) { await deleteDoc(doc(_db, 'products', id)); }
 
-  return { startListening, getAll, getById, add, update, remove, query, getStats, isEmpty };
+  return { startListening, getAll, getDeleted, getById, add, update, softDelete, restore, permanentDelete, query, getStats, isEmpty };
 })();
 
 
@@ -806,7 +824,8 @@ const ICONS = {
   trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/></svg>`,
   copy:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>`,
   image: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>`,
-  pkg:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 21H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/><path d="M9 3h10a2 2 0 0 1 2 2v7"/><path d="M12 12 9 3M12 12l3-9"/><path d="M2 9h20M17 17h4M19 15v4"/></svg>`,
+  pkg:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 21H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/><path d="M9 3h10a2 2 0 0 1 2 2v7"/><path d="M12 12 9 3M12 12l3-9"/><path d="M2 9h20M17 17h4M19 15v4"/></svg>`,
+  restore: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>`,
 };
 
 
@@ -817,6 +836,7 @@ const UI = (() => {
 
   let _filter    = 'All';
   let _search    = '';
+  let _viewMode  = 'inventory'; // 'inventory' | 'deleted'
   let _editingId = null;
   let _deleteId  = null;
   let _imageData = '';
@@ -911,15 +931,22 @@ const UI = (() => {
     $filters.innerHTML = '';
     ['All', ...CATEGORIES].forEach(cat => {
       const b = document.createElement('button');
-      b.className   = 'filter-tab' + (cat === _filter ? ' active' : '');
+      b.className   = 'filter-tab' + (_viewMode === 'inventory' && cat === _filter ? ' active' : '');
       b.textContent = cat;
-      b.addEventListener('click', () => { _filter = cat; _renderFilters(); _renderProducts(); });
+      b.addEventListener('click', () => { _viewMode = 'inventory'; _filter = cat; _renderFilters(); _renderProducts(); });
       $filters.appendChild(b);
     });
+    const del = document.createElement('button');
+    del.className   = 'filter-tab deleted-tab' + (_viewMode === 'deleted' ? ' active' : '');
+    del.textContent = `Deleted (${DB.getDeleted().length})`;
+    del.addEventListener('click', () => { _viewMode = 'deleted'; _renderFilters(); _renderProducts(); });
+    $filters.appendChild(del);
   }
 
   /* Product grid */
   function _renderProducts() {
+    if (_viewMode === 'deleted') { _renderDeletedView(); return; }
+
     const items = DB.query({ search: _search, category: _filter });
 
     if (!items.length) {
@@ -986,6 +1013,56 @@ const UI = (() => {
     );
     $grid.querySelectorAll('[data-copy]').forEach(b =>
       b.addEventListener('click', () => _handleCopy(b.dataset.copy))
+    );
+  }
+
+  /* Deleted items view */
+  function _renderDeletedView() {
+    const items = DB.getDeleted().sort((a, b) =>
+      new Date(b.deletedAt) - new Date(a.deletedAt)
+    );
+
+    if (!items.length) {
+      $grid.innerHTML = `
+        <div class="empty-state">
+          <div>${ICONS.trash}</div>
+          <h3>No deleted products</h3>
+          <p>Products you delete will appear here.</p>
+        </div>`;
+      return;
+    }
+
+    $grid.innerHTML = items.map(p => {
+      const img = p.image
+        ? `<img src="${p.image}" alt="${_esc(p.name)}" />`
+        : `<div class="card-img-placeholder">${ICONS.image}<span>No image</span></div>`;
+      return `
+        <div class="product-card deleted-card">
+          <div class="card-image-wrap">${img}</div>
+          <div class="card-body">
+            <div class="card-meta-top">
+              <span class="card-category ${_catClass(p.category)}">${_esc(p.category)}</span>
+              <span class="card-date">Deleted ${_dateShort(p.deletedAt)}</span>
+            </div>
+            <div class="card-name">${_esc(p.name)}</div>
+            <div class="card-sku">${_esc(p.sku)}</div>
+            <div class="card-price">${_fmt(p.price)}</div>
+            ${p.notes ? `<div class="card-notes" title="${_esc(p.notes)}">${_esc(p.notes)}</div>` : ''}
+            <div class="card-actions">
+              <div class="card-actions-row">
+                <button class="btn btn-secondary btn-sm" data-restore="${p.id}">${ICONS.restore} Restore</button>
+                <button class="btn btn-ghost btn-sm"     data-perm-delete="${p.id}">${ICONS.trash} Delete Forever</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+    $grid.querySelectorAll('[data-restore]').forEach(b =>
+      b.addEventListener('click', () => _handleRestore(b.dataset.restore))
+    );
+    $grid.querySelectorAll('[data-perm-delete]').forEach(b =>
+      b.addEventListener('click', () => _openPermDeleteConfirm(b.dataset.permDelete))
     );
   }
 
@@ -1135,22 +1212,55 @@ const UI = (() => {
     }
   }
 
-  /* Confirm dialog */
+  /* Restore */
+  async function _handleRestore(id) {
+    try {
+      await DB.restore(id); toast('Product restored.');
+    } catch (e) {
+      console.error(e); toast('Restore failed.', 'error');
+    }
+  }
+
+  /* Permanent delete (from deleted view) */
+  let _permDeleteId = null;
+  function _openPermDeleteConfirm(id) {
+    _permDeleteId = id;
+    const p = DB.getById(id);
+    $confMsg.textContent = p
+      ? `"${p.name}" will be permanently erased and cannot be recovered.`
+      : 'This product will be permanently erased.';
+    $confOv.classList.add('open');
+  }
+
+  /* Confirm dialog (soft delete from inventory) */
   function _openConfirm(id) {
     _deleteId = id;
     const p = DB.getById(id);
     $confMsg.textContent = p
-      ? `"${p.name}" will be permanently deleted.`
-      : 'This product will be permanently deleted.';
+      ? `"${p.name}" will be moved to Deleted.`
+      : 'This product will be moved to Deleted.';
     $confOv.classList.add('open');
   }
-  function _closeConfirm() { $confOv.classList.remove('open'); _deleteId = null; $confDel.disabled = false; }
+  function _closeConfirm() {
+    $confOv.classList.remove('open');
+    _deleteId = null; _permDeleteId = null;
+    $confDel.disabled = false;
+  }
 
   async function _handleDelete() {
+    if (_permDeleteId) {
+      $confDel.disabled = true;
+      try {
+        await DB.permanentDelete(_permDeleteId); toast('Product permanently deleted.'); _closeConfirm();
+      } catch (e) {
+        console.error(e); toast('Delete failed.', 'error'); $confDel.disabled = false;
+      }
+      return;
+    }
     if (!_deleteId) return;
     $confDel.disabled = true;
     try {
-      await DB.remove(_deleteId); toast('Product deleted.'); _closeConfirm();
+      await DB.softDelete(_deleteId); toast('Product moved to Deleted.'); _closeConfirm();
     } catch (e) {
       console.error(e); toast('Delete failed.', 'error'); $confDel.disabled = false;
     }
